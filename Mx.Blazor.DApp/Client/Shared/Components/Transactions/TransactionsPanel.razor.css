@@ -1,0 +1,15 @@
+﻿.panel {
+    z-index: 100;
+    position: fixed;
+    bottom: 0;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 300px;
+}
+
+@media (min-width: 316px) {
+    .panel {
+        right: 0;
+        margin: 1rem;
+    }
+}

@@ -1,0 +1,37 @@
+﻿@using Mx.NET.SDK.Configuration;
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Blazor DApp</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <div class="d-grid gap-2 py-3 px-5">
+        @if (!WalletConnected)
+        {
+            <button class="btn-item mb-1" data-bs-toggle="modal" data-bs-target="#WalletConnectionsModal">Login</button>
+        }
+        else
+        {
+            <button class="btn-item btn-item-outline" @onclick="Disconnect">Logout</button>
+        }
+    </div>
+    <div class="border-bottom border-secondary pt-1"></div>
+
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <i class="bi bi-person-vcard"></i> Account
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="transactions">
+                <i class="bi bi-list-ul"></i> Transactions
+            </NavLink>
+        </div>
+    </nav>
+</div>

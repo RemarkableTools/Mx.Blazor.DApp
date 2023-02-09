@@ -1,0 +1,59 @@
+﻿@page "/"
+<PageTitle>Account</PageTitle>
+
+<div class="container">
+    @if (!WalletConnected)
+    {
+        <div class="d-flex flex-column justify-content-center mt-5">
+            <h3 class="text-center mb-4">Please connect to a wallet</h3>
+            <div class="btn btn-primary btn-lg px-4 mx-auto" data-bs-toggle="modal" data-bs-target="#WalletConnectionsModal">Login</div>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column justify-content-center my-4">
+            @if (AccountContainer.Account != null)
+            {
+                <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
+                    <h4 class="mb-2">Wallet address:</h4>
+                    <span class="font-monospace text-break mb-3">@AccountContainer.Account.Address</span>
+                    <div class="d-flex justify-content-start align-items-center mt-3">
+                        <div>EGLD Balance: <span>@AccountContainer.Account.Balance.ToCurrencyString(4)</span></div>
+                        <button class="btn btn-light btn-sm shadow-none ms-3" @onclick="SyncAccount">Sync</button>
+                    </div>
+                </div>
+            }
+
+            @if (AccountContainer.AccountTokens != null)
+            {
+                <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
+                    <h4 class="mb-2">Account tokens:</h4>
+                    @foreach (var token in AccountContainer.AccountTokens)
+                    {
+                        <span class="m-1 ms-3">@token.Name @token.Balance.ToCurrencyString(4)</span>
+                    }
+                </div>
+
+                <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
+                    <h4 class="mb-3">Send EGLD:</h4>
+                    <span class="fw-bold my-2">Receiver:</span>
+                    <input class="mb-2" type="text" @bind="@Receiver" />
+                    <span class="fw-bold my-2">EGLD:</span>
+                    <input type="text mb-2" @bind="@EGLDAmount" />
+                    <span class="fw-bold my-2">Message:</span>
+                    <input type="text mb-2" @bind="@Message" />
+                    <button class="btn btn-primary mx-auto mt-4" @onclick="SignTransaction">Test send transaction</button>
+                </div>
+            }
+        </div>
+        @if (HashesExecuted.Any())
+        {
+            <div class="d-flex flex-column p-2 border border-2 border-dark rounded shadow mx-auto mw-600 mb-5">
+                @foreach (var hash in HashesExecuted)
+                {
+                    <div class="font-monospace text-center text-break">@hash</div>
+                }
+            </div>
+        }
+    }
+</div>

@@ -1,0 +1,9 @@
+﻿a {
+    color: var(--bs-light);
+}
+
+@media(hover: hover) and (pointer: fine) {
+    a:hover {
+        color: orange;
+    }
+}

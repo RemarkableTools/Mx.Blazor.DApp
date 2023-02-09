@@ -1,0 +1,122 @@
+﻿<div class="modal fade" id="WalletConnectionsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="connectionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header px-4 pb-2">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <h3 class="modal-title user-select-none" id="connectionsModalLabel">Connect to a wallet</h3>
+                    <img class="btn close" src="/icons/x.svg" data-bs-dismiss="modal" />
+                </div>
+            </div>
+            <div class="modal-body py-0 px-3 px-sm-4 mb-sm-2">
+                @if (!isMobile && extensionWalletAvailable)
+                {
+                    <LoginBtn Icon="ic_DeFi_wallet.svg" Name="MultiversX DeFi Wallet" ConnectEvent="ExtensionWalletLogin" />
+                }
+                <MaiarBtn Name="Maiar Wallet" ConnectEvent="WalletConnectLogin" ConnectV2Event="WalletConnectV2Login" />
+                <LoginBtn Icon="ic_Ledger.svg" Name="Ledger" ConnectEvent="HardwareWalletLogin" />
+                <LoginBtn Icon="ic_Web-Wallet.svg" Name="MultiversX Web Wallet" ConnectEvent="WebWalletLogin" />
+                <div id="WalletConnectionsError" class="d-none">
+                    <h5 class="text-center text-danger mb-3 mb-sm-2">Could not initialize the connection</h5>
+                </div>
+                <div id="WalletConnectionsLoginApproval" class="d-none">
+                    <h5 class="text-center text-danger mb-3 mb-sm-2">Login was not approved.</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="WalletConnectQRModal" tabindex="-1" aria-labelledby="walletConnectLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header px-4 pb-4">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <h3 class="modal-title user-select-none" id="walletConnectLabel">Connect with Maiar</h3>
+                    <img class="btn close" src="/icons/x.svg" data-bs-dismiss="modal" />
+                </div>
+            </div>
+            <div class="modal-body px-4 pt-0">
+                <div id="WalletConnectQRContainer"></div>
+            </div>
+            <div class="modal-footer py-2 pb-0">
+                <input id="WalletConnectUri" type="hidden" @bind-value="@WalletConnectUri" />
+                @if (isMobile)
+                {
+                    <button type="button" class="d-flex align-items-center btn btn-primary px-3 py-2 m-0 mb-4" @onclick="MaiarLogin"><img class="icon py-1 me-2" src="/icons/ic_thunder.svg" />Maiar Login</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="LedgerConnectModal" tabindex="-1" aria-labelledby="ledgerConnectLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content ledger-modal">
+            <div class="modal-header px-4">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <h3 class="modal-title user-select-none" id="ledgerConnectLabel">Access your Ledger</h3>
+                    <img class="btn close" src="/icons/x.svg" data-bs-dismiss="modal" />
+                </div>
+            </div>
+            <div class="modal-body px-4">
+                @if (LedgerState == LedgerStates.Error)
+                {
+                    <div class="my-5">
+                        <div class="d-flex justify-content-center">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                        <h3 class="text-center text-danger mb-4">Ledger initialization failed!</h3>
+                        <h5 class="text-center">Check if Ledger is connected and MultiversX app is opened or try to reopen app on Ledger.</h5>
+                    </div>
+                }
+                else if (LedgerState == LedgerStates.Verify)
+                {
+                    <div class="d-flex justify-content-center">
+                        <i class="bi bi-lock"></i>
+                    </div>
+                    <h2 class="text-center pb-2 mb-4">Confirm on Ledger</h2>
+                    <h4 class="text-center text-primary mb-3">Wallet Address</h4>
+                    <div class="border rounded text-break text-center font-monospace p-2">@Addresses[LedgerAddressIndex]</div>
+                    <h4 class="text-center text-primary mt-4 mb-3">Auth Token</h4>
+                    <div class="border rounded text-break text-center font-monospace p-2 mb-4">@($"{AuthToken}{{}}")</div>
+                }
+                else if (LedgerState == LedgerStates.Loading)
+                {
+                    <div class="loading-ledger mb-3">
+                        <div class="spinner-border text-primary mb-4" role="status"></div>
+                        <h4 class="text-center text-nowrap">Waiting for device...</h4>
+                    </div>
+                }
+                else
+                {
+                    <LedgerList Addresses="Addresses" CheckChanged="SetLedgerAddressIndex" />
+                }
+            </div>
+            <div class="modal-footer py-2 pb-0">
+                @if (LedgerState == LedgerStates.Error)
+                {
+                    <button type="button" class="btn btn-primary px-3 py-2 m-0 mb-4" @onclick="HardwareWalletLogin">Try Again</button>
+                }
+                else if (LedgerState == LedgerStates.List)
+                {
+                    <input id="LedgerAddressIndex" type="hidden" @bind-value="@LedgerAddressIndex" />
+                    <div class="d-flex flex-column jusitfy-content-center">
+                        @if (Addresses != null)
+                        {
+                            <div class="d-flex justify-content-center gap-3 mb-4">
+                                @{
+                                    var prevDisabled = pageNumber == 0 ? "d-none" : "d-block";
+                                    var nextDisabled = Addresses == null ? "d-none" : "d-block";
+                                }
+                                <button type="button" class="btn btn-light shadow-none px-2 py-1 @prevDisabled" @onclick="Prev">&lt; Prev</button>
+                                <button type="button" class="btn btn-light shadow-none px-2 py-1 @nextDisabled" @onclick="Next">Next ></button>
+                            </div>
+
+                            <button type="button" class="btn btn-primary shadow-none px-4 py-2 m-0 mx-auto mb-4" @onclick="HardwareWalletConfirm">Confirm</button>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

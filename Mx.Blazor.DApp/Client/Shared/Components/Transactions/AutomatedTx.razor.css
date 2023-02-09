@@ -1,0 +1,53 @@
+﻿.component {
+    background-color: var(--bs-gray-900);
+    box-shadow: 0 1px 6px 0 var(--c-shadow);
+    border-radius: 0.25rem;
+    width: 100%;
+}
+
+.title {
+    font-weight: 600;
+    height: fit-content;
+    margin: auto;
+}
+
+.icon {
+    height: 36px;
+    width: 36px;
+}
+
+.tx-icon {
+    width: 16px;
+}
+
+.dismiss {
+    cursor: pointer;
+    margin-top: -5px;
+}
+
+    .dismiss:hover {
+        color: var(--bs-gray-600);
+    }
+
+.bi-clipboard-check, .bi-search {
+    cursor: pointer;
+    font-size: .8rem;
+}
+
+    .bi-clipboard-check:hover, .bi-search:hover {
+        color: var(--bs-primary);
+    }
+
+    .bi-clipboard-check:active, .bi-search:active {
+        color: var(--bs-primary-text);
+    }
+
+.tx-icon a {
+    color: var(--c-default);
+}
+
+.truncate-front {
+    direction: rtl;
+    text-align: left;
+    margin-left: -2px;
+}

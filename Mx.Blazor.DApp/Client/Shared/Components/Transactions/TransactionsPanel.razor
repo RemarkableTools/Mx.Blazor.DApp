@@ -1,0 +1,10 @@
+﻿<div class="d-flex flex-column justify-content-center panel">
+    @if (TransactionsContainer.TxList.Count > 0)
+    {
+        @foreach (var transaction in TransactionsContainer.TxList)
+        {
+            <AutomatedTx TransactionModel="@transaction" Update="Update" Dismiss="Dismiss" />
+        }
+    }
+    <CanceledToast />
+</div>

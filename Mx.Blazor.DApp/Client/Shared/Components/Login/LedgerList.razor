@@ -1,0 +1,19 @@
+﻿@if (Addresses != null)
+{
+    <div class="d-flex flex-column justify-content-center">
+        @for (int i = 0; i < Addresses.Count; i++)
+        {
+            var address = $"{Addresses[i][..15]}...{Addresses[i][47..]}";
+            var index = i;
+            <div class="mx-auto" @onclick="() => CheckChanged.InvokeAsync(index)">
+                <RadioBtn Name="@address" />
+            </div>
+        }
+    </div>
+}
+else
+{
+    <h4 class="no-address w-100 text-center">
+        No addresses could be retrieved
+    </h4>
+}

@@ -1,0 +1,26 @@
+﻿@page "/transactions"
+<PageTitle>Account</PageTitle>
+
+<div class="container">
+    @if (!WalletConnected)
+    {
+        <div class="d-flex flex-column justify-content-center mt-5">
+            <h3 class="text-center mb-4">Please connect to a wallet</h3>
+            <div class="btn btn-primary btn-lg px-4 mx-auto" data-bs-toggle="modal" data-bs-target="#WalletConnectionsModal">Login</div>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex flex-column justify-content-center mb-3">
+            <button class="btn btn-primary btn-lg px-4 mx-auto mb-4" @onclick="GetTransactions">Get some transactions</button>
+            @if (AccountTransactions != null)
+            {
+                foreach (var tx in AccountTransactions)
+                {
+                    var explorerLink = $"{MultiversxNetwork.Provider.NetworkConfiguration.ExplorerUri}transactions/{tx.TxHash}";
+                    <a class="font-monospace text-decoration-none text-center text-break" href="@explorerLink" target="_blank">@tx.TxHash</a>
+                }
+            }
+        </div>
+    }
+</div>

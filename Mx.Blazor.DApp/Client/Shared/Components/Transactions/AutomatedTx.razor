@@ -1,0 +1,99 @@
+﻿@using Mx.Blazor.DApp.Client.Models;
+@using Mx.NET.SDK.Core.Domain.Helper;
+@using Mx.NET.SDK.Domain.Data.Transaction;
+@using Mx.NET.SDK.Domain.Exceptions;
+
+<div class="d-flex flex-column component p-2 mt-3 user-select-none">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex aling-items-center">
+            @{
+                var globalStatus = "pending";
+                if (TransactionModel.Transactions.Find(t => t.Status == "pending") == null)
+                {
+                    if (TransactionModel.Transactions.Find(t => t.Status == "exception") != null)
+                        globalStatus = "exception";
+                    else if (TransactionModel.Transactions.Find(t => t.Status == "fail" || t.Status == "invalid") != null)
+                        globalStatus = "fail";
+                    else if (TransactionModel.Transactions.Find(t => t.Status == "success") != null)
+                        globalStatus = "success";
+                }
+            }
+            @if (globalStatus == "pending")
+            {
+                <div class="d-flex justify-content-center align-items-center icon">
+                    <div class="d-flex justify-content-center align-items-center icon">
+                        <i class="bi bi-wrench-adjustable-circle fs-4" title="processing"></i>
+                    </div>
+                </div>
+            }
+            else if (globalStatus == "success")
+            {
+                <div class="d-flex justify-content-center align-items-center icon">
+                    <i class="bi bi-check-circle-fill fs-4 text-success" title="success"></i>
+                </div>
+            }
+            else if (globalStatus == "exception")
+            {
+                <div class="d-flex justify-content-center align-items-center icon">
+                    <i class="bi bi-question-octagon-fill fs-4 text-warning" title="exception"></i>
+                </div>
+            }
+            else //fail or invalid
+            {
+                <div class="d-flex justify-content-center align-items-center icon">
+                    <i class="bi bi-x-circle-fill fs-4 text-danger" title="failed"></i>
+                </div>
+            }
+            <div class="title">@TransactionModel.Title</div>
+        </div>
+        <i class="dismiss bi bi-x fs-4 fw-bold" title="dismiss" @onclick="() =>{SyncToken.Cancel(); Dismiss.InvokeAsync(TransactionModel); }"></i>
+    </div>
+
+    <div class="m-2">
+        @foreach (var tx in TransactionModel.Transactions)
+        {
+            var explorerLink = $"{MultiversxNetwork.Provider.NetworkConfiguration.ExplorerUri}transactions/{tx.Hash}";
+
+            <div class="d-flex align-items-center">
+                @if (tx.Status == "pending")
+                {
+                    <div class="tx-icon">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                    </div>
+                }
+                else if (tx.Status == "success")
+                {
+                    <div class="d-flex justify-content-center align-items-center tx-icon">
+                        <i class="bi bi-check" title="sucess"></i>
+                    </div>
+                }
+                else if (tx.Status == "fail")
+                {
+                    <div class="d-flex justify-content-center align-items-center tx-icon">
+                        <i class="bi bi-x" title="failed"></i>
+                    </div>
+                }
+                else if (tx.Status == "exception")
+                {
+                    <div class="d-flex justify-content-center align-items-center tx-icon">
+                        <i class="bi bi-question" title="exception"></i>
+                    </div>
+                }
+                else //invalid
+                {
+                    <div class="d-flex justify-content-center align-items-center tx-icon">
+                        <i class="bi bi-x-circle" title="invalid"></i>
+                    </div>
+                }
+                <div class="font-monospace text-decoration-none text-light ms-1">@tx.Hash.Substring(0,11)</div>
+                <div class="font-monospace text-decoration-none text-truncate truncate-front text-light me-1">@tx.Hash.Substring(40)</div>
+                <div class="d-flex justify-content-center align-items-center tx-icon" @onclick="() => CopyToClipboard(tx.Hash)">
+                    <i class="bi bi-clipboard-check" title="copy"></i>
+                </div>
+                <div class="d-flex justify-content-center align-items-center tx-icon ms-2">
+                    <a class="bi bi-search" title="show in explorer" href="@explorerLink" target="_blank"></a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
