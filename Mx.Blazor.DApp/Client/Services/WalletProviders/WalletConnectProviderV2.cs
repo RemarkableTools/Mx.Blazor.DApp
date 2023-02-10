@@ -3,6 +3,8 @@ using Mx.Blazor.DApp.Client.Services.WalletProviders.Interfaces;
 using Microsoft.JSInterop;
 using Mx.Blazor.DApp.Client.Application.Exceptions;
 using Mx.NET.SDK.Domain;
+using Mx.Blazor.DApp.Client.Application.Constants;
+using Mx.NET.SDK.Configuration;
 
 namespace Mx.Blazor.DApp.Client.Services.WalletProviders
 {
@@ -14,9 +16,21 @@ namespace Mx.Blazor.DApp.Client.Services.WalletProviders
             JsRuntime = jsRuntime;
         }
 
+        private static string GetNetwork()
+        {
+            return MultiversxNetwork.Provider.NetworkConfiguration.Network switch
+            {
+                Network.LocalNet => "local",
+                Network.MainNet => "1",
+                Network.DevNet => "D",
+                Network.TestNet => "T",
+                _ => throw new Exception("Network doesn't exist!")
+            };
+        }
+
         public async Task Init(params string[] args)
         {
-            var initialized = await JsRuntime.InvokeAsync<bool>("WalletConnectV2.Obj.init");
+            var initialized = await JsRuntime.InvokeAsync<bool>("WalletConnectV2.Obj.init", GetNetwork());
             if (!initialized)
                 throw new InitException();
         }
