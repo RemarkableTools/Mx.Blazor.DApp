@@ -13,9 +13,9 @@ const relayUrl = "wss://relay.walletconnect.com";
 const projectId = "9b1a9564f91cb659ffe21b73d5c4e2d8";
 
 class WalletConnectV2 {
-    async init(network) {
+    async init(chainId) {
         console.log(network);
-        this.provider = new WalletConnectV2Provider(this.prepareCallbacks(), network, relayUrl, projectId);
+        this.provider = new WalletConnectV2Provider(this.prepareCallbacks(), chainId, relayUrl, projectId);
         var initialized = await this.provider.init();
         if (!initialized)
             showConnectionError();
