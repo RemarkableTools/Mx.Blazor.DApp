@@ -1,5 +1,4 @@
 ﻿using Mx.NET.SDK.Configuration;
-using Mx.NET.SDK.Domain.Data.Network;
 using Mx.NET.SDK.Provider;
 
 namespace Mx.Blazor.DApp.Client.Application.Constants
