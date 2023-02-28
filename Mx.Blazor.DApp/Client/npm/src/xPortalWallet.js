@@ -10,7 +10,7 @@ import {
 } from "./common";
 
 const relayUrl = "wss://relay.walletconnect.com";
-const projectId = "9b1a9564f91cb659ffe21b73d5c4e2d8";
+const projectId = "17e2b91ffd21870bd04d7295e26453ad";
 
 class XPortal {
     async init(chainId) {
