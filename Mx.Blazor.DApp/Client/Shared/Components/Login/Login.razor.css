@@ -20,6 +20,15 @@
     transition: opacity .1s linear, top .1s ease-out;
 }
 
+.btn-multiversx {
+    color: black;
+    background-color: #23f7dd;
+}
+
+    .btn-multiversx:hover {
+        background-color: #08d3ba;
+    }
+
 .close {
     width: 44px;
     background-color: var(--bs-gray-800);
@@ -34,6 +43,7 @@
 
 .icon {
     width: 20px;
+    color: black;
 }
 
 .loading-ledger {

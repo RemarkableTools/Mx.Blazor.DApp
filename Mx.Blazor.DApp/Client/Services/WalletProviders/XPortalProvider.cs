@@ -8,10 +8,10 @@ using Mx.NET.SDK.Configuration;
 
 namespace Mx.Blazor.DApp.Client.Services.WalletProviders
 {
-    public class WalletConnectV2Provider : IWalletProvider
+    public class XPortalProvider : IWalletProvider
     {
         private readonly IJSRuntime JsRuntime;
-        public WalletConnectV2Provider(IJSRuntime jsRuntime)
+        public XPortalProvider(IJSRuntime jsRuntime)
         {
             JsRuntime = jsRuntime;
         }
@@ -30,45 +30,45 @@ namespace Mx.Blazor.DApp.Client.Services.WalletProviders
 
         public async Task Init(params string[] args)
         {
-            var initialized = await JsRuntime.InvokeAsync<bool>("WalletConnectV2.Obj.init", GetNetwork());
+            var initialized = await JsRuntime.InvokeAsync<bool>("XPortalWallet.Obj.init", GetNetwork());
             if (!initialized)
                 throw new InitException();
         }
 
         public async Task<string> Login(string authToken)
         {
-            await JsRuntime.InvokeVoidAsync("WalletConnectV2.Obj.login", authToken);
+            await JsRuntime.InvokeVoidAsync("XPortalWallet.Obj.login", authToken);
             return "";
         }
 
         public async Task<string> GetAddress()
         {
-            return await JsRuntime.InvokeAsync<string>("WalletConnectV2.Obj.getAddress");
+            return await JsRuntime.InvokeAsync<string>("XPortalWallet.Obj.getAddress");
         }
 
         public async Task<bool> IsConnected()
         {
-            return await JsRuntime.InvokeAsync<bool>("WalletConnectV2.Obj.isConnected");
+            return await JsRuntime.InvokeAsync<bool>("XPortalWallet.Obj.isConnected");
         }
 
         public async Task Logout()
         {
-            await JsRuntime.InvokeVoidAsync("WalletConnectV2.Obj.logout");
+            await JsRuntime.InvokeVoidAsync("XPortalWallet.Obj.logout");
         }
 
         public async Task TransactionIsCanceled()
         {
-            await JsRuntime.InvokeVoidAsync("WalletConnectV2.Obj.transactionCanceled");
+            await JsRuntime.InvokeVoidAsync("XPortalWallet.Obj.transactionCanceled");
         }
 
         public async Task<string> SignTransaction(TransactionRequest transactionRequest)
         {
-            return await JsRuntime.InvokeAsync<string>("WalletConnectV2.Obj.signTransaction", transactionRequest.GetTransactionRequestDecoded());
+            return await JsRuntime.InvokeAsync<string>("XPortalWallet.Obj.signTransaction", transactionRequest.GetTransactionRequestDecoded());
         }
 
         public async Task<string> SignTransactions(TransactionRequest[] transactionsRequest)
         {
-            return await JsRuntime.InvokeAsync<string>("WalletConnectV2.Obj.signTransactions", (object)transactionsRequest.GetTransactionsRequestDecoded());
+            return await JsRuntime.InvokeAsync<string>("XPortalWallet.Obj.signTransactions", (object)transactionsRequest.GetTransactionsRequestDecoded());
         }
     }
 }

@@ -37,17 +37,12 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
             await WalletProvider.ConnectToExtensionWallet();
         }
 
-        public async void WalletConnectLogin()
+        public async void XPortalWalletLogin()
         {
-            await WalletProvider.ConnectToMaiarWallet();
+            await WalletProvider.ConnectToXPortal();
         }
 
-        public async void WalletConnectV2Login()
-        {
-            await WalletProvider.ConnectToWalletV2();
-        }
-
-        public void MaiarLogin()
+        public void XPortalLogin()
         {
             NavigationManager.NavigateTo(WalletConnectUri);
         }
