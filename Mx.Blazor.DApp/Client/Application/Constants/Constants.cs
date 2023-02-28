@@ -23,10 +23,9 @@
     public enum WalletType
     {
         Extension= 1,
-        WalletConnectV2,
+        XPortal,
         Hardware,
-        Web,
-        WalletConnect
+        Web
     }
 
     public enum WebWalletState

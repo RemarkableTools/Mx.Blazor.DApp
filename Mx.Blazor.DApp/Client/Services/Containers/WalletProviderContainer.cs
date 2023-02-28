@@ -11,7 +11,6 @@ using Mx.Blazor.DApp.Client.Application.Helpers;
 using Mx.NET.SDK.Core.Domain.Helper;
 using Mx.NET.SDK.Domain;
 using Mx.NET.SDK.Provider.Dtos.API.Transactions;
-using Mx.Blazor.DApp.Client.Application.Exceptions;
 using Mx.Blazor.DApp.Shared.Connection;
 
 namespace Mx.Blazor.DApp.Client.Services.Containers
@@ -39,20 +38,20 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             NavigationManager = navigationManager;
             TransactionsContainer = transactionsContainer;
 
-            OnMaiarClientConnected += ValidateWalletConnection;
-            OnMaiarClientDisconnected += WalletDisconnected;
+            OnXPortalClientConnected += ValidateWalletConnection;
+            OnXPortalClientDisconnected += WalletDisconnected;
 
             Initialize();
         }
 
         private IWalletProvider WalletProvider = default!;
 
-        private static Func<AccountToken?, Task> OnMaiarClientConnected = default!;
-        private static event Action? OnMaiarClientDisconnected;
+        private static Func<AccountToken?, Task> OnXPortalClientConnected = default!;
+        private static event Action? OnXPortalClientDisconnected;
         [JSInvokable]
-        public static async void MaiarClientConnect(string accountInfo) => await OnMaiarClientConnected.Invoke(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+        public static async void XPortalClientConnect(string accountInfo) => await OnXPortalClientConnected.Invoke(JsonWrapper.Deserialize<AccountToken>(accountInfo));
         [JSInvokable]
-        public static void MaiarClientDisconnect() => OnMaiarClientDisconnected?.Invoke();
+        public static void XPortalClientDisconnect() => OnXPortalClientDisconnected?.Invoke();
 
         private string? _authToken;
 
@@ -101,20 +100,17 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
         {
             switch (_sessionStorage.GetItem<WalletType>(WALLET_TYPE))
             {
-                case WalletType.Web:
-                    WalletProvider = new WebWalletProvider(JsRuntime);
-                    break;
-                case WalletType.WalletConnect:
-                    WalletProvider = new WalletConnectProvider(JsRuntime);
-                    break;
-                case WalletType.WalletConnectV2:
-                    WalletProvider = new WalletConnectV2Provider(JsRuntime);
-                    break;
                 case WalletType.Extension:
                     WalletProvider = new ExtensionWalletProvider(JsRuntime);
                     break;
+                case WalletType.XPortal:
+                    WalletProvider = new XPortalProvider(JsRuntime);
+                    break;
                 case WalletType.Hardware:
                     WalletProvider = new HardwareWalletProvider(JsRuntime);
+                    break;
+                case WalletType.Web:
+                    WalletProvider = new WebWalletProvider(JsRuntime);
                     break;
                 default:
                     _localStorage.RemoveAllWcItems();
@@ -128,21 +124,18 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
             switch (_sessionStorage.GetItem<WalletType>(WALLET_TYPE))
             {
-                case WalletType.Web:
-                    await WalletProvider.Init();
-                    await WebWalletCheckingState();
-                    break;
-                case WalletType.WalletConnect:
-                    await WalletProvider.Init();
-                    break;
-                case WalletType.WalletConnectV2:
-                    await WalletProvider.Init();
-                    break;
                 case WalletType.Extension:
                     await WalletProvider.Init(_sessionStorage.GetItem<AccountToken>(ACCOUNT_TOKEN).Address);
                     break;
+                case WalletType.XPortal:
+                    await WalletProvider.Init();
+                    break;
                 case WalletType.Hardware:
                     await WalletProvider.Init();
+                    break;
+                case WalletType.Web:
+                    await WalletProvider.Init();
+                    await WebWalletCheckingState();
                     break;
             }
         }
@@ -160,21 +153,9 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             catch { }
         }
 
-        public async Task ConnectToMaiarWallet()
+        public async Task ConnectToXPortal()
         {
-            WalletProvider = new WalletConnectProvider(JsRuntime);
-            _authToken = GenerateAuthToken.Random();
-            try
-            {
-                await WalletProvider.Init();
-                await WalletProvider.Login(_authToken);
-            }
-            catch { }
-        }
-
-        public async Task ConnectToWalletV2()
-        {
-            WalletProvider = new WalletConnectV2Provider(JsRuntime);
+            WalletProvider = new XPortalProvider(JsRuntime);
             _authToken = GenerateAuthToken.Random();
             try
             {

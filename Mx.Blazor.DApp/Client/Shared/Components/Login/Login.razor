@@ -12,7 +12,7 @@
                 {
                     <LoginBtn Icon="ic_DeFi_wallet.svg" Name="MultiversX DeFi Wallet" ConnectEvent="ExtensionWalletLogin" />
                 }
-                <MaiarBtn Name="Maiar Wallet" ConnectEvent="WalletConnectLogin" ConnectV2Event="WalletConnectV2Login" />
+                <LoginBtn Icon="ic_xPortal.svg" Name="xPortal App" ConnectEvent="XPortalWalletLogin" />
                 <LoginBtn Icon="ic_Ledger.svg" Name="Ledger" ConnectEvent="HardwareWalletLogin" />
                 <LoginBtn Icon="ic_Web-Wallet.svg" Name="MultiversX Web Wallet" ConnectEvent="WebWalletLogin" />
                 <div id="WalletConnectionsError" class="d-none">
@@ -31,7 +31,7 @@
         <div class="modal-content">
             <div class="modal-header px-4 pb-4">
                 <div class="d-flex justify-content-between align-items-center w-100">
-                    <h3 class="modal-title user-select-none" id="walletConnectLabel">Connect with Maiar</h3>
+                    <h3 class="modal-title user-select-none" id="walletConnectLabel">Connect with xPortal App</h3>
                     <img class="btn close" src="/icons/x.svg" data-bs-dismiss="modal" />
                 </div>
             </div>
@@ -42,7 +42,7 @@
                 <input id="WalletConnectUri" type="hidden" @bind-value="@WalletConnectUri" />
                 @if (isMobile)
                 {
-                    <button type="button" class="d-flex align-items-center btn btn-primary px-3 py-2 m-0 mb-4" @onclick="MaiarLogin"><img class="icon py-1 me-2" src="/icons/ic_thunder.svg" />Maiar Login</button>
+                    <button type="button" class="d-flex align-items-center btn btn-multiversx px-3 py-2 m-0 mb-4" @onclick="XPortalLogin"><img class="icon py-1 me-2" src="/icons/ic_thunder-black.svg" />xPortal Mobile Wallet</button>
                 }
             </div>
         </div>

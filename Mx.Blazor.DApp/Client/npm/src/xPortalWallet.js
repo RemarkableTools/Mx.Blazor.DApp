@@ -1,5 +1,5 @@
 ﻿import QRCode from "qrcode";
-import { WalletConnectProvider } from "@multiversx/sdk-wallet-connect-provider";
+import { WalletConnectV2Provider } from "@multiversx/sdk-wallet-connect-provider";
 import { Address, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
     showConnectionError,
@@ -9,11 +9,13 @@ import {
     cancelTxToast
 } from "./common";
 
-const bridgeUrl = "https://bridge.walletconnect.org";
+const relayUrl = "wss://relay.walletconnect.com";
+const projectId = "9b1a9564f91cb659ffe21b73d5c4e2d8";
 
-class WalletConnect {
-    async init() {
-        this.provider = new WalletConnectProvider(bridgeUrl, this.prepareCallbacks());
+class XPortal {
+    async init(chainId) {
+        console.log(chainId);
+        this.provider = new WalletConnectV2Provider(this.prepareCallbacks(), chainId, relayUrl, projectId);
         var initialized = await this.provider.init();
         if (!initialized)
             showConnectionError();
@@ -29,18 +31,23 @@ class WalletConnect {
         return {
             onClientLogin: async () => {
                 closeModal();
-                sessionStorage.setItem("wallettype", "5");
-                DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'MaiarClientConnect', JSON.stringify({ address: self.provider.address, signature: self.provider.signature }));
+                sessionStorage.setItem("wallettype", "2");
+                DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'XPortalClientConnect', JSON.stringify({ address: self.provider.address, signature: self.provider.signature }));
             },
             onClientLogout: async () => {
-                DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'MaiarClientDisconnect');
+                DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'XPortalClientDisconnect');
+            },
+            onClientEvent: (event) => {
+                console.log('wc2 session event: ', event);
             }
         };
     }
 
     async login(authToken) {
-        const connectorUri = await this.provider.login();
-        await openModal(connectorUri + "&token=" + authToken);
+        const { uri, approval } = await this.provider.connect();
+
+        await openModal(uri + "&token=" + authToken);
+        await this.provider.login({ approval: approval, token: authToken });
     }
 
     async getAddress() {
@@ -60,12 +67,13 @@ class WalletConnect {
     }
 
     async signTransaction(transactionRequest) {
-        signingModal("Maiar");
+        signingModal("xPortal");
 
         const transaction = new Transaction({
             nonce: transactionRequest.nonce,
             value: transactionRequest.value,
             receiver: new Address(transactionRequest.receiver),
+            sender: new Address(transactionRequest.sender),
             gasPrice: transactionRequest.gasPrice,
             gasLimit: transactionRequest.gasLimit,
             data: new TransactionPayload(transactionRequest.data),
@@ -86,13 +94,14 @@ class WalletConnect {
     }
 
     async signTransactions(transactionsRequest) {
-        signingModal("Maiar");
+        signingModal("xPortal");
 
         const transactions = transactionsRequest.map(transactionRequest =>
             new Transaction({
                 nonce: transactionRequest.nonce,
                 value: transactionRequest.value,
                 receiver: new Address(transactionRequest.receiver),
+                sender: new Address(transactionRequest.sender),
                 gasPrice: transactionRequest.gasPrice,
                 gasLimit: transactionRequest.gasLimit,
                 data: new TransactionPayload(transactionRequest.data),
@@ -114,14 +123,14 @@ class WalletConnect {
     }
 }
 
-export const Obj = new WalletConnect();
+export const Obj = new XPortal();
 
-async function openModal(connectorUri) {
-    const svg = await QRCode.toString(connectorUri, { type: "svg" });
+async function openModal(uri) {
+    const svg = await QRCode.toString(uri, { type: "svg" });
 
     $("#WalletConnectQRContainer").html(svg);
     $("#WalletConnectQRModal").modal("show");
-    document.getElementById("WalletConnectUri").value = "https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link=https://maiar.com/?wallet-connect=" + encodeURIComponent(connectorUri);
+    document.getElementById("WalletConnectUri").value = "https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link=https://maiar.com/?wallet-connect=" + encodeURIComponent(uri);
     document.getElementById("WalletConnectUri").dispatchEvent(new Event('change'));
 }
 

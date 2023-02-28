@@ -62,12 +62,11 @@ class ExtensionWallet {
     async signTransaction(transactionRequest) {
         signingModal("MultiversX DeFi Wallet");
 
-        const address = await this.provider.getAddress();
         const transaction = new Transaction({
             nonce: transactionRequest.nonce,
             value: transactionRequest.value,
             receiver: new Address(transactionRequest.receiver),
-            sender: new Address(address),
+            sender: new Address(transactionRequest.sender),
             gasPrice: transactionRequest.gasPrice,
             gasLimit: transactionRequest.gasLimit,
             data: new TransactionPayload(transactionRequest.data),
@@ -90,13 +89,12 @@ class ExtensionWallet {
     async signTransactions(transactionsRequest) {
         signingModal("MultiversX DeFi Wallet");
 
-        const address = await this.provider.getAddress();
         const transactions = transactionsRequest.map(transactionRequest =>
             new Transaction({
                 nonce: transactionRequest.nonce,
                 value: transactionRequest.value,
                 receiver: new Address(transactionRequest.receiver),
-                sender: new Address(address),
+                sender: new Address(transactionRequest.sender),
                 gasPrice: transactionRequest.gasPrice,
                 gasLimit: transactionRequest.gasLimit,
                 data: new TransactionPayload(transactionRequest.data),
