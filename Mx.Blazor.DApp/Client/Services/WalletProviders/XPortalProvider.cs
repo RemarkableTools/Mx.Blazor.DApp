@@ -70,5 +70,10 @@ namespace Mx.Blazor.DApp.Client.Services.WalletProviders
         {
             return await JsRuntime.InvokeAsync<string>("XPortalWallet.Obj.signTransactions", (object)transactionsRequest.GetTransactionsRequestDecoded());
         }
+
+        public Task CancelAction()
+        {
+            return Task.CompletedTask;
+        }
     }
 }

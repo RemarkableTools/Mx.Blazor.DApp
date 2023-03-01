@@ -114,6 +114,10 @@ class ExtensionWallet {
             signingModalClose();
         }
     }
+
+    cancelAction() {
+        this.provider.cancelAction();
+    }
 }
 
 export const Obj = new ExtensionWallet();
