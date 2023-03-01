@@ -8,7 +8,14 @@
                 </div>
             </div>
             <div class="modal-footer p-0">
-                <button type="button" class="btn btn-primary px-3 py-2 m-0 mb-4" data-bs-dismiss="modal">Dismiss</button>
+                @if (CanCancel)
+                {
+                    <button type="button" class="btn btn-primary px-3 py-2 m-0 mb-4" data-bs-dismiss="modal" @onclick="CancelAction">Cancel</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-primary px-3 py-2 m-0 mb-4" data-bs-dismiss="modal">Dismiss</button>
+                }
             </div>
         </div>
     </div>

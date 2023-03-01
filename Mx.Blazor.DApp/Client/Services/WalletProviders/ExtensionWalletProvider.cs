@@ -55,5 +55,10 @@ namespace Mx.Blazor.DApp.Client.Services.WalletProviders
         {
             return await JsRuntime.InvokeAsync<string>("ExtensionWallet.Obj.signTransactions", (object)transactionsRequest.GetTransactionsRequestDecoded());
         }
+
+        public async Task CancelAction()
+        {
+            await JsRuntime.InvokeVoidAsync("ExtensionWallet.Obj.cancelAction");
+        }
     }
 }

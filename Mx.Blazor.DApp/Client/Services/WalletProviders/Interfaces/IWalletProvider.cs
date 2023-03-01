@@ -12,5 +12,6 @@ namespace Mx.Blazor.DApp.Client.Services.WalletProviders.Interfaces
         Task TransactionIsCanceled();
         Task<string> SignTransaction(TransactionRequest transactionRequest);
         Task<string> SignTransactions(TransactionRequest[] transactionsRequest);
+        Task CancelAction();
     }
 }

@@ -272,6 +272,13 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             TransactionsContainer.NewTransaction(title, response.TxsHashes.Select(tx => tx.Value).ToArray());
         }
 
+        public async Task CancelAction()
+        {
+            if (WalletProvider is null) return;
+
+            await WalletProvider.CancelAction();
+        }
+
         public async Task WebWalletCheckingState()
         {
             switch (_sessionStorage.GetItem<WebWalletState>(WEB_WALLET_STATE))
