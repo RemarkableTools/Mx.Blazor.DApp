@@ -3,7 +3,7 @@ using static Mx.Blazor.DApp.Client.Application.Constants.BrowserStorage;
 
 namespace Mx.Blazor.DApp.Client.Shared.Components.Modals
 {
-    public partial class WaitingForSignatureModal
+    public partial class WaitingForMessageSignatureModal
     {
         private bool CanCancel { get; set; }
 

@@ -1,6 +1,6 @@
 ﻿import qs from "qs";
 import { WalletProvider } from "@multiversx/sdk-web-wallet-provider";
-import { Address, Transaction, TransactionPayload } from "@multiversx/sdk-core";
+import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
     cancelTxToast
 } from "./common";
@@ -35,8 +35,21 @@ class WebWallet {
         cancelTxToast();
     }
 
-    async signTransaction(transactionRequest) {
+    async signMessage(message) {
+        sessionStorage.setItem("sigmessage", message);
         sessionStorage.setItem("webwalletstate", "3");
+
+        const signableMessage = new SignableMessage({
+            message: Buffer.from(message)
+        });
+
+        const callbackUrl = getCurrentLocation();
+        await this.provider.signMessage(signableMessage, { callbackUrl: callbackUrl });
+        return "";
+    }
+
+    async signTransaction(transactionRequest) {
+        sessionStorage.setItem("webwalletstate", "4");
 
         const transaction = new Transaction({
             nonce: transactionRequest.nonce,
@@ -56,7 +69,7 @@ class WebWallet {
     }
 
     async signTransactions(transactionsRequest) {
-        sessionStorage.setItem("webwalletstate", "3");
+        sessionStorage.setItem("webwalletstate", "4");
 
         const transactions = transactionsRequest.map(transactionRequest =>
             new Transaction({

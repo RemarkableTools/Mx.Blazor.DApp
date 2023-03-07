@@ -12,6 +12,10 @@ using Mx.NET.SDK.Core.Domain.Helper;
 using Mx.NET.SDK.Domain;
 using Mx.NET.SDK.Provider.Dtos.API.Transactions;
 using Mx.Blazor.DApp.Shared.Connection;
+using Mx.NET.SDK.Core.Domain;
+using Mx.Blazor.DApp.Client.Models;
+using System.Text;
+using Mx.NET.SDK.Core.Domain.Values;
 
 namespace Mx.Blazor.DApp.Client.Services.Containers
 {
@@ -59,7 +63,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
         public event Action? OnWalletDisconnected;
         public async Task ValidateWalletConnection(AccountToken? accountToken)
         {
-            if (IsConnected()) return; //because Maiar wallet always validates at refresh
+            if (IsConnected()) return; //because xPortal wallet always validates at refresh
             if (accountToken == null || !accountToken.IsValid()) return;
 
             var connectionRequest = new ConnectionRequest()
@@ -212,24 +216,52 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             return _sessionStorage.GetItem<AccountToken>(ACCOUNT_TOKEN).Address;
         }
 
+        public async Task<bool?> SignMessage(SignableMessage signableMessage)
+        {
+            if (WalletProvider is null) return null;
+
+            var signedMessage = await WalletProvider.SignMessage(signableMessage.Message);
+            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return null;
+
+            if (signedMessage == "canceled")
+            {
+                return null;
+            }
+
+            var messageSignature = JsonWrapper.Deserialize<MessageSignature>(signedMessage);
+            var message = new SignableMessage()
+            {
+                Address = Address.FromBech32(MyAddress()),
+                Message = Encoding.Default.GetString(Convert.FromHexString(messageSignature.Message[2..])),
+                Signature = messageSignature.Signature[2..]
+            };
+
+            return await Http.PostAsync<bool>("/wallet/verify", message);
+        }
+
         public async Task SignTransaction(TransactionRequest transactionRequest, string title = "Transaction")
         {
             if (WalletProvider is null) return;
 
             if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
 
-            var signedRequest = await WalletProvider.SignTransaction(transactionRequest);
+            var signedTransaction = await WalletProvider.SignTransaction(transactionRequest);
             if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return;
 
-            if (signedRequest == "canceled")
+            if (signedTransaction == "canceled")
             {
                 await WalletProvider.TransactionIsCanceled();
                 return;
             }
 
+            await SignTransaction(signedTransaction, title);
+        }
+
+        private async Task SignTransaction(string signedTransaction, string title = "Transaction")
+        {
             try
             {
-                var transaction = JsonWrapper.Deserialize<TransactionRequestDto>(signedRequest);
+                var transaction = JsonWrapper.Deserialize<TransactionRequestDto>(signedTransaction);
                 await SendTransaction(transaction, title);
             }
             catch { }
@@ -239,7 +271,6 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
         {
             var response = await MultiversxNetwork.Provider.SendTransaction(transaction);
             TransactionsContainer.NewTransaction(title, response.TxHash);
-            return;
         }
 
         public async Task SignTransactions(TransactionRequest[] transactionsRequest, string title = "Transactions")
@@ -248,22 +279,26 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
             if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
 
-            var signedRequests = await WalletProvider.SignTransactions(transactionsRequest);
+            var signedTransactions = await WalletProvider.SignTransactions(transactionsRequest);
             if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return;
 
-            if (signedRequests == "canceled")
+            if (signedTransactions == "canceled")
             {
                 await WalletProvider.TransactionIsCanceled();
                 return;
             }
 
+            await SignTransactions(signedTransactions, title);
+        }
+
+        private async Task SignTransactions(string signedTransactions, string title = "Transactions")
+        {
             try
             {
-                var transactions = JsonWrapper.Deserialize<TransactionRequestDto[]>(signedRequests);
+                var transactions = JsonWrapper.Deserialize<TransactionRequestDto[]>(signedTransactions);
                 await SendTransactions(transactions, title);
             }
             catch { }
-
         }
 
         private async Task SendTransactions(TransactionRequestDto[] transactions, string title)
@@ -285,27 +320,51 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             {
                 case WebWalletState.None:
                     break;
+
                 case WebWalletState.LoggingIn:
-                    _sessionStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
                     var accountToken = NavigationManager.Uri.GetAccountTokenFromUrl();
                     _authToken = _sessionStorage.GetItemAsString(AUTH_TOKEN);
                     await ValidateWalletConnection(accountToken);
                     _sessionStorage.RemoveItem(AUTH_TOKEN);
+
                     NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
+
+                    _sessionStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
                     break;
-                case WebWalletState.WaitingForTx:
-                    var signedRequests = NavigationManager.Uri.GetTransactionsFromUrl();
+
+                case WebWalletState.WaitingForSig:
+                    var signature = NavigationManager.Uri.GetSignatureFromUrl();
+                    var message = _sessionStorage.GetItemAsString(SIG_MESSAGE);
+                    _sessionStorage.RemoveItem(SIG_MESSAGE);
+
                     NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
-                    if (signedRequests == "canceled")
-                    {
-                        await WalletProvider.TransactionIsCanceled();
-                        break;
-                    }
 
                     try
                     {
-                        var transactions = JsonWrapper.Deserialize<TransactionRequestDto[]>(signedRequests);
-                        await SendTransactions(transactions, _sessionStorage.GetItemAsString(TX_TITLE));
+                        //TODO Web Wallet SignMessage implementation
+                    }
+                    catch { }
+                    finally
+                    {
+                        _sessionStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
+                    }
+                    break;
+
+                case WebWalletState.WaitingForTx:
+                    var signedRequests = NavigationManager.Uri.GetTransactionsFromUrl();
+
+                    NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
+
+                    try
+                    {
+                        if (signedRequests == "canceled")
+                        {
+                            await WalletProvider.TransactionIsCanceled();
+                        }
+                        else
+                        {
+                            await SignTransactions(signedRequests, _sessionStorage.GetItemAsString(TX_TITLE));
+                        }
                     }
                     catch { }
                     finally

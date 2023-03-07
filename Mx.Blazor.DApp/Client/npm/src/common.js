@@ -16,6 +16,16 @@ export function loginNotApproved() {
     document.getElementById("WalletConnectionsLoginApproval").className = "d-block";
 }
 
+export function signingMessageModal(device) {
+    $("#MessageSignatureConfirmDevice").html(device);
+    $("#WalletMessageSignatureModal").modal("show");
+}
+
+export function signingMessageModalClose() {
+    $("#MessageSignatureConfirmDevice").html("");
+    $("#WalletMessageSignatureModal").modal("hide");
+}
+
 export function signingModal(device) {
     $("#SignatureConfirmDevice").html(device);
     $("#WalletSignatureModal").modal("show");

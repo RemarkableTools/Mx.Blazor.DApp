@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Mx.Blazor.DApp.Shared.Connection;
+using Mx.Blazor.DApp.Server.Helpers;
 
 namespace Mx.Blazor.DApp.Server.Services
 {

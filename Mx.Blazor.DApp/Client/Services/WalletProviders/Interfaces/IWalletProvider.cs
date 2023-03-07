@@ -10,6 +10,7 @@ namespace Mx.Blazor.DApp.Client.Services.WalletProviders.Interfaces
         Task<bool> IsConnected();
         Task Logout();
         Task TransactionIsCanceled();
+        Task<string> SignMessage(string message);
         Task<string> SignTransaction(TransactionRequest transactionRequest);
         Task<string> SignTransactions(TransactionRequest[] transactionsRequest);
         Task CancelAction();

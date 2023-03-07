@@ -1,9 +1,11 @@
 ﻿import QRCode from "qrcode";
 import { WalletConnectV2Provider } from "@multiversx/sdk-wallet-connect-provider";
-import { Address, Transaction, TransactionPayload } from "@multiversx/sdk-core";
+import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
     showConnectionError,
     hideConnectionError,
+    signingMessageModal,
+    signingMessageModalClose,
     signingModal,
     signingModalClose,
     cancelTxToast
@@ -14,7 +16,6 @@ const projectId = "17e2b91ffd21870bd04d7295e26453ad";
 
 class XPortal {
     async init(chainId) {
-        console.log(chainId);
         this.provider = new WalletConnectV2Provider(this.prepareCallbacks(), chainId, relayUrl, projectId);
         var initialized = await this.provider.init();
         if (!initialized)
@@ -64,6 +65,25 @@ class XPortal {
 
     transactionCanceled() {
         cancelTxToast();
+    }
+
+    async signMessage(message) {
+        signingMessageModal("xPortal");
+
+        const signableMessage = new SignableMessage({
+            message: Buffer.from(message)
+        });
+
+        try {
+            await this.provider.signMessage(signableMessage);
+            return JSON.stringify(signableMessage.toJSON(), null, 4);
+        }
+        catch (err) {
+            return "canceled";
+        }
+        finally {
+            signingMessageModalClose();
+        }
     }
 
     async signTransaction(transactionRequest) {
