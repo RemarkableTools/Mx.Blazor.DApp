@@ -341,7 +341,23 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
                     try
                     {
-                        //TODO Web Wallet SignMessage implementation
+                        var messageSignature = new MessageSignature(message, signature);
+                        var signableMessage = new SignableMessage()
+                        {
+                            Address = Address.FromBech32(MyAddress()),
+                            Message = messageSignature.Message,
+                            Signature = messageSignature.Signature
+                        };
+
+                        var isValid =  await Http.PostAsync<bool>("/wallet/verify", signableMessage);
+                        if(isValid)
+                        {
+                            //do some event
+                        }
+                        else
+                        {
+                            //do another event
+                        }
                     }
                     catch { }
                     finally
