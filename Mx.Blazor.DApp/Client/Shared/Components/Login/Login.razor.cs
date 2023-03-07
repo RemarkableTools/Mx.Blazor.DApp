@@ -39,7 +39,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
 
         public async void XPortalWalletLogin()
         {
-            await WalletProvider.ConnectToXPortal();
+            await WalletProvider.ConnectToXPortalWallet();
         }
 
         public void XPortalLogin()

@@ -8,10 +8,10 @@ using Mx.NET.SDK.Configuration;
 
 namespace Mx.Blazor.DApp.Client.Services.WalletProviders
 {
-    public class XPortalProvider : IWalletProvider
+    public class XPortalWalletProvider : IWalletProvider
     {
         private readonly IJSRuntime JsRuntime;
-        public XPortalProvider(IJSRuntime jsRuntime)
+        public XPortalWalletProvider(IJSRuntime jsRuntime)
         {
             JsRuntime = jsRuntime;
         }
