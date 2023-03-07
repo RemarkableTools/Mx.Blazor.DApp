@@ -3,7 +3,6 @@ using Mx.Blazor.DApp.Client.Application.Constants;
 using Mx.Blazor.DApp.Client.Services.Containers;
 using Mx.NET.SDK.Core.Domain;
 using Mx.NET.SDK.Core.Domain.Values;
-using Mx.NET.SDK.Domain;
 using Mx.NET.SDK.Domain.Data.Network;
 using Mx.NET.SDK.TransactionsManager;
 
@@ -13,6 +12,8 @@ namespace Mx.Blazor.DApp.Client.Pages
     {
         [CascadingParameter]
         private bool WalletConnected { get; set; }
+
+        private string SignableMessageText { get; set; } = "";
 
         private string Receiver { get; set; } = "";
         private string EGLDAmount { get; set; } = "";
@@ -51,6 +52,14 @@ namespace Mx.Blazor.DApp.Client.Pages
             await AccountContainer.Sync();
 
             StateHasChanged();
+        }
+
+        public async void SignMessage()
+        {
+            if (string.IsNullOrWhiteSpace(SignableMessageText)) return;
+
+            var signMessage = await WalletProvider.SignMessage(new SignableMessage() { Message = SignableMessageText });
+            Console.WriteLine(signMessage);
         }
 
         public async void SignTransaction()

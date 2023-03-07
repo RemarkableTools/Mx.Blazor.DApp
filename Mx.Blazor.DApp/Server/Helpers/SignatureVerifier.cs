@@ -3,7 +3,7 @@ using Mx.NET.SDK.Core.Domain;
 using Mx.NET.SDK.Core.Domain.Values;
 using Mx.NET.SDK.Wallet.Wallet;
 
-namespace Mx.Blazor.DApp.Server.Services
+namespace Mx.Blazor.DApp.Server.Helpers
 {
     public static class SignatureVerifier
     {

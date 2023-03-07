@@ -1,0 +1,21 @@
+﻿.modal {
+    padding-right: 0 !important;
+    background: rgb(0 0 0 / 50%) !important;
+}
+
+.modal-content {
+    background-color: var(--bs-gray-900) !important;
+    box-shadow: 0 1px 6px 0px var(--c-shadow-btn);
+}
+
+.modal-footer {
+    justify-content: center;
+    border: 0;
+}
+
+.modal.fade {
+    -webkit-transition: opacity .1s linear, top .1s ease-out;
+    -moz-transition: opacity .1s linear, top .1s ease-out;
+    -o-transition: opacity .1s linear, top .1s ease-out;
+    transition: opacity .1s linear, top .1s ease-out;
+}

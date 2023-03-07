@@ -1,10 +1,12 @@
 ﻿import { HWProvider } from "@multiversx/sdk-hw-provider";
-import { Address, Transaction, TransactionPayload } from "@multiversx/sdk-core";
+import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
     showConnectionError,
     hideConnectionError,
     loginApproved,
     loginNotApproved,
+    signingMessageModal,
+    signingMessageModalClose,
     signingModal,
     signingModalClose,
     cancelTxToast
@@ -76,6 +78,25 @@ class HardwareWallet {
 
     transactionCanceled() {
         cancelTxToast();
+    }
+
+    async signMessage(message) {
+        signingMessageModal("Ledger");
+
+        const signableMessage = new SignableMessage({
+            message: Buffer.from(message)
+        });
+
+        try {
+            await this.provider.signMessage(signableMessage);
+            return JSON.stringify(signableMessage.toJSON(), null, 4);
+        }
+        catch (err) {
+            return "canceled";
+        }
+        finally {
+            signingMessageModalClose();
+        }
     }
 
     async signTransaction(transactionRequest) {

@@ -48,6 +48,11 @@ namespace Mx.Blazor.DApp.Client.Services.WalletProviders
             await JsRuntime.InvokeVoidAsync("WebWallet.Obj.transactionCanceled");
         }
 
+        public async Task<string> SignMessage(string message)
+        {
+            return await JsRuntime.InvokeAsync<string>("WebWallet.Obj.signMessage", message);
+        }
+
         public async Task<string> SignTransaction(TransactionRequest transactionRequest)
         {
             return await JsRuntime.InvokeAsync<string>("WebWallet.Obj.signTransaction", transactionRequest.GetTransactionRequestDecoded());

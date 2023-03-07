@@ -12,6 +12,7 @@
         public const string ACCOUNT_TOKEN = "accountToken";
         public const string WALLET_TYPE = "wallettype";
         public const string WEB_WALLET_STATE = "webwalletstate";
+        public const string SIG_MESSAGE = "sigmessage";
         public const string TX_TITLE = "txtitle";
         public const string WALLET_CONNECT_DEF_STORAGE = "walletconnect";
 
@@ -32,6 +33,7 @@
     {
         None = 1,
         LoggingIn,
+        WaitingForSig,
         WaitingForTx
     }
 }
