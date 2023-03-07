@@ -108,7 +108,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                     WalletProvider = new ExtensionWalletProvider(JsRuntime);
                     break;
                 case WalletType.XPortal:
-                    WalletProvider = new XPortalProvider(JsRuntime);
+                    WalletProvider = new XPortalWalletProvider(JsRuntime);
                     break;
                 case WalletType.Hardware:
                     WalletProvider = new HardwareWalletProvider(JsRuntime);
@@ -157,9 +157,9 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             catch { }
         }
 
-        public async Task ConnectToXPortal()
+        public async Task ConnectToXPortalWallet()
         {
-            WalletProvider = new XPortalProvider(JsRuntime);
+            WalletProvider = new XPortalWalletProvider(JsRuntime);
             _authToken = GenerateAuthToken.Random();
             try
             {
