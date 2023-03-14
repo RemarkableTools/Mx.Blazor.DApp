@@ -41,7 +41,7 @@ namespace Mx.Blazor.DApp.Client.Pages
 
         public async Task DisplayAccountInformation()
         {
-            var address = WalletProvider.MyAddress();
+            var address = WalletProvider.GetAddress();
             await AccountContainer.Initialize(address);
 
             StateHasChanged();

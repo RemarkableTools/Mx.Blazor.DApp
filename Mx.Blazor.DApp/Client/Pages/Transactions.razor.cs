@@ -13,7 +13,7 @@ namespace Mx.Blazor.DApp.Client.Pages
 
         public async Task GetTransactions()
         {
-            var address = WalletProvider.MyAddress();
+            var address = WalletProvider.GetAddress();
             Dictionary<string, string> dict = new()
             {
                 { "sender", address }
