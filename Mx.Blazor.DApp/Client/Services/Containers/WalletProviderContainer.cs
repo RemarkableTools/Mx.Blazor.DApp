@@ -211,7 +211,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             WalletDisconnected();
         }
 
-        public string MyAddress()
+        public string GetAddress()
         {
             return _sessionStorage.GetItem<AccountToken>(ACCOUNT_TOKEN).Address;
         }
@@ -231,7 +231,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             var messageSignature = JsonWrapper.Deserialize<MessageSignature>(signedMessage);
             var message = new SignableMessage()
             {
-                Address = Address.FromBech32(MyAddress()),
+                Address = Address.FromBech32(GetAddress()),
                 Message = Encoding.Default.GetString(Convert.FromHexString(messageSignature.Message[2..])),
                 Signature = messageSignature.Signature[2..]
             };
@@ -344,7 +344,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                         var messageSignature = new MessageSignature(message, signature);
                         var signableMessage = new SignableMessage()
                         {
-                            Address = Address.FromBech32(MyAddress()),
+                            Address = Address.FromBech32(GetAddress()),
                             Message = messageSignature.Message,
                             Signature = messageSignature.Signature
                         };
