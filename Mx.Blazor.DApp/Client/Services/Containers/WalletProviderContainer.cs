@@ -225,7 +225,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
             if (signedMessage == "canceled")
             {
-                return null;
+                return false;
             }
 
             var messageSignature = JsonWrapper.Deserialize<MessageSignature>(signedMessage);
@@ -239,32 +239,36 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             return await Http.PostAsync<bool>("/wallet/verify", message);
         }
 
-        public async Task SignTransaction(TransactionRequest transactionRequest, string title = "Transaction")
+        public async Task<bool?> SignAndSendTransaction(TransactionRequest transactionRequest, string title = "Transaction")
         {
-            if (WalletProvider is null) return;
+            if (WalletProvider is null) return null;
 
             if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
 
             var signedTransaction = await WalletProvider.SignTransaction(transactionRequest);
-            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return;
+            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return null;
 
             if (signedTransaction == "canceled")
             {
                 await WalletProvider.TransactionIsCanceled();
-                return;
+                return false;
             }
 
-            await SignTransaction(signedTransaction, title);
+            return await SendTransaction(signedTransaction, title);
         }
 
-        private async Task SignTransaction(string signedTransaction, string title = "Transaction")
+        private async Task<bool> SendTransaction(string signedTransaction, string title = "Transaction")
         {
             try
             {
                 var transaction = JsonWrapper.Deserialize<TransactionRequestDto>(signedTransaction);
                 await SendTransaction(transaction, title);
+                return true;
             }
-            catch { }
+            catch
+            {
+                return false;
+            }
         }
 
         private async Task SendTransaction(TransactionRequestDto transaction, string title)
@@ -273,32 +277,36 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             TransactionsContainer.NewTransaction(title, response.TxHash);
         }
 
-        public async Task SignTransactions(TransactionRequest[] transactionsRequest, string title = "Transactions")
+        public async Task<bool?> SignAndSendTransactions(TransactionRequest[] transactionsRequest, string title = "Transactions")
         {
-            if (WalletProvider is null) return;
+            if (WalletProvider is null) return null;
 
             if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
 
             var signedTransactions = await WalletProvider.SignTransactions(transactionsRequest);
-            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return;
+            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return null;
 
             if (signedTransactions == "canceled")
             {
                 await WalletProvider.TransactionIsCanceled();
-                return;
+                return false;
             }
 
-            await SignTransactions(signedTransactions, title);
+            return await SendTransactions(signedTransactions, title);
         }
 
-        private async Task SignTransactions(string signedTransactions, string title = "Transactions")
+        private async Task<bool> SendTransactions(string signedTransactions, string title = "Transactions")
         {
             try
             {
                 var transactions = JsonWrapper.Deserialize<TransactionRequestDto[]>(signedTransactions);
                 await SendTransactions(transactions, title);
+                return true;
             }
-            catch { }
+            catch
+            {
+                return false;
+            }
         }
 
         private async Task SendTransactions(TransactionRequestDto[] transactions, string title)
@@ -349,8 +357,8 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                             Signature = messageSignature.Signature
                         };
 
-                        var isValid =  await Http.PostAsync<bool>("/wallet/verify", signableMessage);
-                        if(isValid)
+                        var isValid = await Http.PostAsync<bool>("/wallet/verify", signableMessage);
+                        if (isValid)
                         {
                             //do some event
                         }
@@ -379,7 +387,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                         }
                         else
                         {
-                            await SignTransactions(signedRequests, _sessionStorage.GetItemAsString(TX_TITLE));
+                            await SendTransactions(signedRequests, _sessionStorage.GetItemAsString(TX_TITLE));
                         }
                     }
                     catch { }
