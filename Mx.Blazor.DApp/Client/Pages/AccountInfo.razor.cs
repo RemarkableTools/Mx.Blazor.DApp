@@ -77,7 +77,7 @@ namespace Mx.Blazor.DApp.Client.Pages
             ESDTAmount.EGLD(EGLDAmount),
             Message == "" ? null : Message);
 
-            await WalletProvider.SignTransaction(transaction, "One transaction");
+            await WalletProvider.SignAndSendTransaction(transaction, "One transaction");
         }
 
         public void NewTransactionsExecuted(string[] hashes)
