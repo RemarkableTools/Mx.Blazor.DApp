@@ -18,7 +18,6 @@ namespace Mx.Blazor.DApp.Client.Pages
         private string Receiver { get; set; } = "";
         private string EGLDAmount { get; set; } = "";
         private string Message { get; set; } = "";
-        private List<string> HashesExecuted { get; set; } = new();
 
         protected override void OnInitialized()
         {
