@@ -11,7 +11,7 @@
     }
     else
     {
-        <div class="d-flex flex-column justify-content-center my-4">
+        <div class="d-flex flex-column justify-content-center mt-4">
             @if (AccountContainer.Account != null)
             {
                 <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
@@ -52,14 +52,5 @@
                 </div>
             }
         </div>
-        @if (HashesExecuted.Any())
-        {
-            <div class="d-flex flex-column p-2 border border-2 border-dark rounded shadow mx-auto mw-600 mb-5">
-                @foreach (var hash in HashesExecuted)
-                {
-                    <div class="font-monospace text-center text-break">@hash</div>
-                }
-            </div>
-        }
     }
 </div>
