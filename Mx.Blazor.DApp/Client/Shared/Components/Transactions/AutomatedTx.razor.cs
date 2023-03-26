@@ -21,6 +21,9 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
 
         protected override async Task OnInitializedAsync()
         {
+            if (!TransactionModel.Transactions.Select(t => t.Status == "pending").Any())
+                return;
+
             CancellationToken cancellationToken = SyncToken.Token;
             await Task.Factory.StartNew(async () =>
             {

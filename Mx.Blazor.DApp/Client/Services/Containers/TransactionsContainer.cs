@@ -77,6 +77,8 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             storedTxs.RemoveAll(t => t.Txs[0].Hash == transactionModel.Transactions[0].Hash);
             if (storedTxs.Count > 0)
                 _sessionStorage.SetItem(TX_LIST, storedTxs);
+            else
+                _sessionStorage.RemoveItem(TX_LIST);
         }
 
         public void TransactionsExecuted(string[] hashes)
