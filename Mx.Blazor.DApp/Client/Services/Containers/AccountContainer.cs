@@ -1,4 +1,4 @@
-﻿using Mx.Blazor.DApp.Client.Application.Constants;
+﻿using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.NET.SDK.Domain.Data.Account;
 
 namespace Mx.Blazor.DApp.Client.Services.Containers
@@ -18,8 +18,8 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
             try
             {
-                Account ??= Account.From(await MultiversxNetwork.Provider.GetAccount(address));
-                AccountTokens ??= AccountToken.From(await MultiversxNetwork.Provider.GetAccountTokens(address, 1000));
+                Account ??= Account.From(await Provider.GetAccount(address));
+                AccountTokens ??= AccountToken.From(await Provider.GetAccountTokens(address, 1000));
             }
             catch { }
         }
@@ -34,7 +34,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
         {
             if (Account is null) return;
 
-            await Account.Sync(MultiversxNetwork.Provider);
+            await Account.Sync(Provider);
         }
 
         public async Task SyncAccountTokens()
@@ -43,7 +43,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
             try
             {
-                AccountTokens = AccountToken.From(await MultiversxNetwork.Provider.GetAccountTokens(Account.Address.Bech32, 1000));
+                AccountTokens = AccountToken.From(await Provider.GetAccountTokens(Account.Address.Bech32, 1000));
             }
             catch { }
         }

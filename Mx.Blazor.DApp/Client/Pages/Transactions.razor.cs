@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Mx.Blazor.DApp.Client.Application.Constants;
+using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.NET.SDK.Provider.Dtos.API.Transactions;
 
 namespace Mx.Blazor.DApp.Client.Pages
@@ -18,7 +18,7 @@ namespace Mx.Blazor.DApp.Client.Pages
             {
                 { "sender", address }
             };
-            AccountTransactions = await MultiversxNetwork.Provider.GetTransactions(100, 0, dict);
+            AccountTransactions = await Provider.GetTransactions(100, 0, dict);
 
             StateHasChanged();
         }

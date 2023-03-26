@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Mx.Blazor.DApp.Client.Application.Constants;
+using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.Blazor.DApp.Client.Models;
-using Mx.Blazor.DApp.Client.Services;
 using Mx.NET.SDK.Domain.Data.Transaction;
 using Mx.NET.SDK.Domain.Exceptions;
 
@@ -22,6 +21,9 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
 
         protected override async Task OnInitializedAsync()
         {
+            if (!TransactionModel.Transactions.Select(t => t.Status == "pending").Any())
+                return;
+
             CancellationToken cancellationToken = SyncToken.Token;
             await Task.Factory.StartNew(async () =>
             {
@@ -33,7 +35,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
                     try
                     {
                         var transaction = Transaction.From(TransactionModel.Transactions[i].Hash);
-                        await transaction.AwaitExecuted(MultiversxNetwork.Provider, MultiversxNetwork.TxCheckTime);
+                        await transaction.AwaitExecuted(Provider, TxCheckTime);
                         TransactionModel.Transactions[i].Status = transaction.Status;
                     }
                     catch (TransactionException.TransactionStatusNotReachedException)

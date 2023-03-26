@@ -1,4 +1,4 @@
-﻿using Mx.Blazor.DApp.Client.Application.Constants;
+﻿using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.NET.SDK.Configuration;
 
 namespace Mx.Blazor.DApp.Client.Shared
@@ -10,7 +10,7 @@ namespace Mx.Blazor.DApp.Client.Shared
 
         public MainLayout()
         {
-            switch (MultiversxNetwork.Provider.NetworkConfiguration.Network)
+            switch (Provider.NetworkConfiguration.Network)
             {
                 case Network.MainNet:
                     CurrentNetwork = "MainNet";
