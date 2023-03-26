@@ -2,7 +2,7 @@
 using Mx.Blazor.DApp.Client.Services.WalletProviders.Interfaces;
 using Microsoft.JSInterop;
 using Mx.Blazor.DApp.Client.Application.Exceptions;
-using Mx.Blazor.DApp.Client.Application.Constants;
+using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.NET.SDK.Domain;
 
 namespace Mx.Blazor.DApp.Client.Services.WalletProviders
@@ -17,7 +17,7 @@ namespace Mx.Blazor.DApp.Client.Services.WalletProviders
 
         public async Task Init(params string[] args)
         {
-            var initialized = await JsRuntime.InvokeAsync<bool>("WebWallet.Obj.init", MultiversxNetwork.Provider.NetworkConfiguration.WebWalletUri.AbsoluteUri);
+            var initialized = await JsRuntime.InvokeAsync<bool>("WebWallet.Obj.init", Provider.NetworkConfiguration.WebWalletUri.AbsoluteUri);
             if (!initialized)
                 throw new InitException();
         }

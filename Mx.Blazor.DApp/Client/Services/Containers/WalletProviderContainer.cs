@@ -5,6 +5,7 @@ using Blazored.LocalStorage;
 using static Mx.Blazor.DApp.Client.Application.Constants.BrowserStorage;
 using Mx.Blazor.DApp.Client.Services.WalletProviders.Interfaces;
 using Mx.Blazor.DApp.Client.Services.WalletProviders;
+using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.Blazor.DApp.Client.Application.Constants;
 using Mx.Blazor.DApp.Client.Application.ExtensionMethods;
 using Mx.Blazor.DApp.Client.Application.Helpers;
@@ -273,7 +274,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
         private async Task SendTransaction(TransactionRequestDto transaction, string title)
         {
-            var response = await MultiversxNetwork.Provider.SendTransaction(transaction);
+            var response = await Provider.SendTransaction(transaction);
             TransactionsContainer.NewTransaction(title, response.TxHash);
         }
 
@@ -311,7 +312,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
         private async Task SendTransactions(TransactionRequestDto[] transactions, string title)
         {
-            var response = await MultiversxNetwork.Provider.SendTransactions(transactions);
+            var response = await Provider.SendTransactions(transactions);
             TransactionsContainer.NewTransaction(title, response.TxsHashes.Select(tx => tx.Value).ToArray());
         }
 

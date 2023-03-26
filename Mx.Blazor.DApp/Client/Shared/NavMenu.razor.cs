@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Mx.Blazor.DApp.Client.Application.Constants;
-using Mx.NET.SDK.Configuration;
-using Mx.NET.SDK.Provider;
 
 namespace Mx.Blazor.DApp.Client.Shared
 {

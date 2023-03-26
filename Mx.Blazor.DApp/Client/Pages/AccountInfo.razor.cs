@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Mx.Blazor.DApp.Client.Application.Constants;
+using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.Blazor.DApp.Client.Services.Containers;
 using Mx.NET.SDK.Core.Domain;
 using Mx.NET.SDK.Core.Domain.Values;
 using Mx.NET.SDK.Domain.Data.Network;
-using Mx.NET.SDK.TransactionsManager;
+using static Mx.NET.SDK.TransactionsManager.EGLDTransactionRequest;
 
 namespace Mx.Blazor.DApp.Client.Pages
 {
@@ -65,11 +65,11 @@ namespace Mx.Blazor.DApp.Client.Pages
         {
             if (string.IsNullOrWhiteSpace(Receiver) || string.IsNullOrWhiteSpace(EGLDAmount)) return;
 
-            var provider = MultiversxNetwork.Provider;
+            var provider = Provider;
             var networkConfig = await NetworkConfig.GetFromNetwork(provider);
             await AccountContainer.SyncAccount();
 
-            var transaction = EGLDTransactionRequest.EGLDTransfer(
+            var transaction = EGLDTransfer(
             networkConfig,
             AccountContainer.Account,
             Address.FromBech32(Receiver),

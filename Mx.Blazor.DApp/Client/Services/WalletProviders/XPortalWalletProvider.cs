@@ -3,7 +3,7 @@ using Mx.Blazor.DApp.Client.Services.WalletProviders.Interfaces;
 using Microsoft.JSInterop;
 using Mx.Blazor.DApp.Client.Application.Exceptions;
 using Mx.NET.SDK.Domain;
-using Mx.Blazor.DApp.Client.Application.Constants;
+using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.NET.SDK.Configuration;
 
 namespace Mx.Blazor.DApp.Client.Services.WalletProviders
@@ -18,7 +18,7 @@ namespace Mx.Blazor.DApp.Client.Services.WalletProviders
 
         private static string GetNetwork()
         {
-            return MultiversxNetwork.Provider.NetworkConfiguration.Network switch
+            return Provider.NetworkConfiguration.Network switch
             {
                 Network.LocalNet => "local",
                 Network.MainNet => "1",
