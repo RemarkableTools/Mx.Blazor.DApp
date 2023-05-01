@@ -19,7 +19,7 @@
                     <span class="font-monospace text-break mb-3">@AccountContainer.Account.Address</span>
                     <div class="d-flex justify-content-start align-items-center mt-3">
                         <div>EGLD Balance: <span>@AccountContainer.Account.Balance.ToCurrencyString(4)</span></div>
-                        <button class="btn btn-light btn-sm shadow-none ms-3" @onclick="SyncAccount">Sync</button>
+                        <button class="btn btn-light btn-sm shadow-none ms-3" @onclick="NewTxExecuted">Sync</button>
                     </div>
                 </div>
 
@@ -28,17 +28,17 @@
                     <input type="text mb-2" @bind="@SignableMessageText" />
                     <button class="btn btn-primary mx-auto mt-4" @onclick="SignMessage">Test sign message</button>
                 </div>
-            }
 
-            @if (AccountContainer.AccountTokens != null)
-            {
-                <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
-                    <h4 class="mb-2">Account tokens:</h4>
-                    @foreach (var token in AccountContainer.AccountTokens)
-                    {
-                        <span class="m-1 ms-3">@token.Name @token.Balance.ToCurrencyString(4)</span>
-                    }
-                </div>
+                @if (AccountContainer.AccountTokens != null)
+                {
+                    <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
+                        <h4 class="mb-2">Account tokens:</h4>
+                        @foreach (var token in AccountContainer.AccountTokens)
+                        {
+                            <span class="m-1 ms-3">@token.Name @token.Balance.ToCurrencyString(4)</span>
+                        }
+                    </div>
+                }
 
                 <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
                     <h4 class="mb-3">Send EGLD:</h4>

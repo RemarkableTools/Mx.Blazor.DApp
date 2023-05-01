@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
+using static Mx.Blazor.DApp.Client.Application.Constants.DAppConstants;
 using Mx.Blazor.DApp.Client.Models;
 using Mx.NET.SDK.Domain.Data.Transaction;
 using Mx.NET.SDK.Domain.Exceptions;
@@ -66,6 +67,15 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
                 }
                 TransactionsContainer.TransactionsExecuted(TransactionModel.Transactions.Select(t => t.Hash).ToArray());
                 StateHasChanged();
+
+                if (TX_DISMISS_TIME > 0)
+                {
+                    if (TransactionModel.Transactions.Find(tx => tx.Status != "success") == null)
+                    {
+                        await Task.Delay(TX_DISMISS_TIME);
+                        await Dismiss.InvokeAsync(TransactionModel);
+                    }
+                }
             }, cancellationToken);
         }
 

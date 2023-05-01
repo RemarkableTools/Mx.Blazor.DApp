@@ -28,16 +28,33 @@ namespace Mx.Blazor.DApp.Client.Shared
         {
             WalletConnected = WalletProvider.IsConnected();
 
-            WalletProvider.OnWalletConnected += ConnectionStateChanged;
-            WalletProvider.OnWalletDisconnected += ConnectionStateChanged;
+            WalletProvider.OnWalletConnected += OnWalletConnected;
+            WalletProvider.OnWalletDisconnected += OnWalletDisconnected;
         }
 
         protected override async Task OnInitializedAsync()
         {
             await WalletProvider.InitializeAsync();
+
+            if (WalletConnected)
+                await InitializeConnection();
         }
 
-        private void ConnectionStateChanged()
+        private async Task InitializeConnection()
+        {
+            await InitializeNetworkConfig();
+            await WalletManager.InitializeAsync();
+        }
+
+        private async void OnWalletConnected()
+        {
+            WalletConnected = WalletProvider.IsConnected();
+            StateHasChanged();
+
+            await InitializeConnection();
+        }
+
+        private void OnWalletDisconnected()
         {
             WalletConnected = WalletProvider.IsConnected();
             StateHasChanged();

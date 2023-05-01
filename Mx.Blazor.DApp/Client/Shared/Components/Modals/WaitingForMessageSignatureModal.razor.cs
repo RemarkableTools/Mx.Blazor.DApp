@@ -1,4 +1,4 @@
-﻿using static Mx.Blazor.DApp.Client.Application.Constants.BrowserStorage;
+﻿using static Mx.Blazor.DApp.Client.Application.Constants.BrowserLocalStorage;
 using Mx.Blazor.DApp.Client.Application.Constants;
 
 namespace Mx.Blazor.DApp.Client.Shared.Components.Modals

@@ -3,8 +3,6 @@ import { Address, SignableMessage, Transaction, TransactionPayload } from "@mult
 import {
     showConnectionError,
     hideConnectionError,
-    loginApproved,
-    loginNotApproved,
     signingMessageModal,
     signingMessageModalClose,
     signingModal,
@@ -32,11 +30,7 @@ class ExtensionWallet {
 
         if (this.provider.account.signature) {
             $("#WalletConnectionsModal").modal("hide");
-            loginApproved();
-            sessionStorage.setItem("wallettype", "1");
-        }
-        else {
-            loginNotApproved();
+            localStorage.setItem("wallettype", "1");
         }
 
         return JSON.stringify({

@@ -32,11 +32,11 @@ class XPortal {
         return {
             onClientLogin: async () => {
                 closeModal();
-                sessionStorage.setItem("wallettype", "2");
-                DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'XPortalClientConnect', JSON.stringify({ address: self.provider.address, signature: self.provider.signature }));
+                localStorage.setItem("wallettype", "2");
+                DotNet.invokeMethodAsync('RemarkableTools.Client', 'XPortalClientConnect', JSON.stringify({ address: self.provider.address, signature: self.provider.signature }));
             },
             onClientLogout: async () => {
-                DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'XPortalClientDisconnect');
+                DotNet.invokeMethodAsync('RemarkableTools.Client', 'XPortalClientDisconnect');
             },
             onClientEvent: (event) => {
                 console.log('wc2 session event: ', event);

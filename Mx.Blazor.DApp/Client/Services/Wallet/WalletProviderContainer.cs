@@ -2,13 +2,12 @@
 using Microsoft.AspNetCore.Components;
 using Blazored.SessionStorage;
 using Blazored.LocalStorage;
-using static Mx.Blazor.DApp.Client.Application.Constants.BrowserStorage;
-using Mx.Blazor.DApp.Client.Services.WalletProviders.Interfaces;
-using Mx.Blazor.DApp.Client.Services.WalletProviders;
+using static Mx.Blazor.DApp.Client.Application.Constants.BrowserSessionStorage;
+using static Mx.Blazor.DApp.Client.Application.Constants.BrowserLocalStorage;
+using static Mx.Blazor.DApp.Client.Application.Constants.DAppConstants;
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.Blazor.DApp.Client.Application.Constants;
 using Mx.Blazor.DApp.Client.Application.ExtensionMethods;
-using Mx.Blazor.DApp.Client.Application.Helpers;
 using Mx.NET.SDK.Core.Domain.Helper;
 using Mx.NET.SDK.Domain;
 using Mx.NET.SDK.Provider.Dtos.API.Transactions;
@@ -17,8 +16,12 @@ using Mx.NET.SDK.Core.Domain;
 using Mx.Blazor.DApp.Client.Models;
 using System.Text;
 using Mx.NET.SDK.Core.Domain.Values;
+using Mx.Blazor.DApp.Client.Services.Containers;
+using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
+using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders;
+using Mx.Blazor.DApp.Client.Application.Exceptions;
 
-namespace Mx.Blazor.DApp.Client.Services.Containers
+namespace Mx.Blazor.DApp.Client.Services.Wallet
 {
     public class WalletProviderContainer
     {
@@ -28,13 +31,17 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
         private readonly ISyncSessionStorageService _sessionStorage;
         private readonly NavigationManager NavigationManager;
         private readonly TransactionsContainer TransactionsContainer;
+        private readonly PostTxSendService _postTxSendService;
+        private readonly NativeAuthService _nativeAuthService;
         public WalletProviderContainer(
             IHttpService httpService,
             IJSRuntime jsRuntime,
             ISyncLocalStorageService localStorage,
             ISyncSessionStorageService sessionStorage,
             NavigationManager navigationManager,
-            TransactionsContainer transactionsContainer)
+            TransactionsContainer transactionsContainer,
+            PostTxSendService postTxSendService,
+            NativeAuthService nativeAuthService)
         {
             Http = httpService;
             JsRuntime = jsRuntime;
@@ -42,6 +49,8 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             _localStorage = localStorage;
             NavigationManager = navigationManager;
             TransactionsContainer = transactionsContainer;
+            _postTxSendService = postTxSendService;
+            _nativeAuthService = nativeAuthService;
 
             OnXPortalClientConnected += ValidateWalletConnection;
             OnXPortalClientDisconnected += WalletDisconnected;
@@ -76,34 +85,39 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
             try
             {
-                var connectionToken = await Http.PostAsync<ConnectionToken>("/connection/verify", connectionRequest);
-                {
-                    _sessionStorage.SetItemAsString(ACCESS_TOKEN, connectionToken.AccessToken);
-                    _sessionStorage.SetItem(ACCOUNT_TOKEN, accountToken);
+                var connectionToken = await Http.PostAsync<ConnectionToken>("api/connection/verify", connectionRequest);
+                _localStorage.SetItemAsString(ACCESS_TOKEN, connectionToken.AccessToken);
+                _localStorage.SetItem(ACCESS_TOKEN_EXPIRES, DateTime.Now.AddSeconds(NATIVE_AUTH_TTL).ToTimestamp());
+                _localStorage.SetItem(ACCOUNT_TOKEN, accountToken);
 
-                    OnWalletConnected?.Invoke();
-                }
+                OnWalletConnected?.Invoke();
             }
-            catch //(HttpException hex) //access token could no be generated
+            catch (HttpException hex) //access token could no be generated
             {
-                await JsRuntime.InvokeVoidAsync("alert", "Access Token could not be generated");
+                WalletProvider = default!;
+                _localStorage.RemoveItem(WALLET_TYPE);
+
+                await JsRuntime.InvokeVoidAsync("alert", hex.Message);
             }
         }
         public void WalletDisconnected()
         {
             WalletProvider = default!;
-            _sessionStorage.RemoveItem(ACCESS_TOKEN);
-            _sessionStorage.RemoveItem(ACCOUNT_TOKEN);
-            _sessionStorage.RemoveItem(WALLET_TYPE);
-            _sessionStorage.RemoveItem(WEB_WALLET_STATE);
+            _localStorage.RemoveItem(ACCESS_TOKEN);
+            _localStorage.RemoveItem(ACCESS_TOKEN_EXPIRES);
+            _localStorage.RemoveItem(ACCOUNT_TOKEN);
+            _localStorage.RemoveItem(WALLET_TYPE);
+            _localStorage.RemoveItem(WEB_WALLET_STATE);
             _localStorage.RemoveAllWcItems();
 
             OnWalletDisconnected?.Invoke();
         }
 
+        private bool accessTokenExpired;
         private void Initialize()
         {
-            switch (_sessionStorage.GetItem<WalletType>(WALLET_TYPE))
+            accessTokenExpired = false;
+            switch (_localStorage.GetItem<WalletType>(WALLET_TYPE))
             {
                 case WalletType.Extension:
                     WalletProvider = new ExtensionWalletProvider(JsRuntime);
@@ -118,8 +132,20 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                     WalletProvider = new WebWalletProvider(JsRuntime);
                     break;
                 default:
+                    _localStorage.RemoveItem(ACCESS_TOKEN);
+                    _localStorage.RemoveItem(ACCESS_TOKEN_EXPIRES);
+                    _localStorage.RemoveItem(ACCOUNT_TOKEN);
+                    _localStorage.RemoveItem(WALLET_TYPE);
+                    _localStorage.RemoveItem(WEB_WALLET_STATE);
                     _localStorage.RemoveAllWcItems();
                     break;
+            }
+
+            var expireTimestamp = _localStorage.GetItem<long>(ACCESS_TOKEN_EXPIRES);
+            if (expireTimestamp > 0 && expireTimestamp < DateTime.Now.ToTimestamp())
+            {
+                accessTokenExpired = true;
+                _localStorage.RemoveItem(ACCESS_TOKEN);
             }
         }
 
@@ -127,10 +153,10 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
         {
             if (WalletProvider is null) return;
 
-            switch (_sessionStorage.GetItem<WalletType>(WALLET_TYPE))
+            switch (_localStorage.GetItem<WalletType>(WALLET_TYPE))
             {
                 case WalletType.Extension:
-                    await WalletProvider.Init(_sessionStorage.GetItem<AccountToken>(ACCOUNT_TOKEN).Address);
+                    await WalletProvider.Init(GetAddress());
                     break;
                 case WalletType.XPortal:
                     await WalletProvider.Init();
@@ -143,12 +169,17 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                     await WebWalletCheckingState();
                     break;
             }
+
+            if (accessTokenExpired)
+            {
+                WalletManagerService.Logout();
+            }
         }
 
         public async Task ConnectToExtensionWallet()
         {
             WalletProvider = new ExtensionWalletProvider(JsRuntime);
-            _authToken = GenerateAuthToken.Random();
+            _authToken = await _nativeAuthService.GenerateToken();
             try
             {
                 await WalletProvider.Init();
@@ -161,7 +192,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
         public async Task ConnectToXPortalWallet()
         {
             WalletProvider = new XPortalWalletProvider(JsRuntime);
-            _authToken = GenerateAuthToken.Random();
+            _authToken = await _nativeAuthService.GenerateToken();
             try
             {
                 await WalletProvider.Init();
@@ -173,7 +204,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
         public async Task ConnectToWebWallet()
         {
             WalletProvider = new WebWalletProvider(JsRuntime);
-            _authToken = GenerateAuthToken.Random();
+            _authToken = await _nativeAuthService.GenerateToken();
             try
             {
                 await WalletProvider.Init();
@@ -197,8 +228,8 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
             try
             {
-                var accountToken = _sessionStorage.GetItem<AccountToken>(ACCOUNT_TOKEN);
-                return !string.IsNullOrEmpty(accountToken.Address);
+                var accessToken = _localStorage.GetItemAsString(ACCESS_TOKEN);
+                return !string.IsNullOrEmpty(accessToken);
             }
             catch { return false; }
         }
@@ -214,7 +245,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
         public string GetAddress()
         {
-            return _sessionStorage.GetItem<AccountToken>(ACCOUNT_TOKEN).Address;
+            return _localStorage.GetItem<AccountToken>(ACCOUNT_TOKEN).Address;
         }
 
         public async Task<bool?> SignMessage(SignableMessage signableMessage)
@@ -222,7 +253,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             if (WalletProvider is null) return null;
 
             var signedMessage = await WalletProvider.SignMessage(signableMessage.Message);
-            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return null;
+            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return null;
 
             if (signedMessage == "canceled")
             {
@@ -237,83 +268,89 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                 Signature = messageSignature.Signature[2..]
             };
 
-            return await Http.PostAsync<bool>("/wallet/verify", message);
+            return await Http.PostAsync<bool>("api/wallet/verify", message);
         }
 
-        public async Task<bool?> SignAndSendTransaction(TransactionRequest transactionRequest, string title = "Transaction")
+        public async Task<string?> SignAndSendTransaction(TransactionRequest transactionRequest, string title = "Transaction")
         {
             if (WalletProvider is null) return null;
 
-            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
+            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
 
             var signedTransaction = await WalletProvider.SignTransaction(transactionRequest);
-            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return null;
+            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return "";
 
             if (signedTransaction == "canceled")
             {
                 await WalletProvider.TransactionIsCanceled();
-                return false;
+                return null;
             }
 
             return await SendTransaction(signedTransaction, title);
         }
 
-        private async Task<bool> SendTransaction(string signedTransaction, string title = "Transaction")
+        private async Task<string?> SendTransaction(string signedTransaction, string title = "Transaction")
         {
             try
             {
                 var transaction = JsonWrapper.Deserialize<TransactionRequestDto>(signedTransaction);
-                await SendTransaction(transaction, title);
-                return true;
+                return await SendTransaction(transaction, title);
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                return null;
             }
         }
 
-        private async Task SendTransaction(TransactionRequestDto transaction, string title)
+        private async Task<string> SendTransaction(TransactionRequestDto transaction, string title)
         {
             var response = await Provider.SendTransaction(transaction);
+
+            await RunPostTxSendProcess();
+
             TransactionsContainer.NewTransaction(title, response.TxHash);
+            return response.TxHash;
         }
 
-        public async Task<bool?> SignAndSendTransactions(TransactionRequest[] transactionsRequest, string title = "Transactions")
+        public async Task<string[]?> SignAndSendTransactions(TransactionRequest[] transactionsRequest, string title = "Transactions")
         {
             if (WalletProvider is null) return null;
 
-            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
+            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
 
             var signedTransactions = await WalletProvider.SignTransactions(transactionsRequest);
-            if (_sessionStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return null;
+            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return Array.Empty<string>();
 
             if (signedTransactions == "canceled")
             {
                 await WalletProvider.TransactionIsCanceled();
-                return false;
+                return null;
             }
 
             return await SendTransactions(signedTransactions, title);
         }
 
-        private async Task<bool> SendTransactions(string signedTransactions, string title = "Transactions")
+        private async Task<string[]?> SendTransactions(string signedTransactions, string title = "Transactions")
         {
             try
             {
                 var transactions = JsonWrapper.Deserialize<TransactionRequestDto[]>(signedTransactions);
-                await SendTransactions(transactions, title);
-                return true;
+                return await SendTransactions(transactions, title);
             }
             catch
             {
-                return false;
+                return null;
             }
         }
 
-        private async Task SendTransactions(TransactionRequestDto[] transactions, string title)
+        private async Task<string[]> SendTransactions(TransactionRequestDto[] transactions, string title)
         {
             var response = await Provider.SendTransactions(transactions);
+
+            await RunPostTxSendProcess();
+
             TransactionsContainer.NewTransaction(title, response.TxsHashes.Select(tx => tx.Value).ToArray());
+            return response.TxsHashes.Select(tx => tx.Value).ToArray();
         }
 
         public async Task CancelAction()
@@ -323,9 +360,25 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             await WalletProvider.CancelAction();
         }
 
+        public void PreparePostTxSendProcess(PostTxSendProcess process, object @object)
+        {
+            if (WalletProvider is null) return;
+
+            _sessionStorage.SetItem(POST_PROCESS, process);
+            _sessionStorage.SetItem(POST_PROCESS_OBJECT, @object);
+        }
+
+        //After TX is sent successfully (tx is sent but you don't know if it will be success or fail at this stage), you can use this function to do a Post (Send) Process like a request to Mx.Blazor.DApp.Sever API
+        //You can use the events TransactionsContainer.TxExecuted or TransactionsContainer.HashesExecuted to do a process after the TX is processed and you know the end state (success/fail/etc.)
+        //Keep in mind that the event will not be triggered if the user will close the website before the tx is processed, so if you want to update the database it might not run...
+        public async Task RunPostTxSendProcess()
+        {
+            await _postTxSendService.Run();
+        }
+
         public async Task WebWalletCheckingState()
         {
-            switch (_sessionStorage.GetItem<WebWalletState>(WEB_WALLET_STATE))
+            switch (_localStorage.GetItem<WebWalletState>(WEB_WALLET_STATE))
             {
                 case WebWalletState.None:
                     break;
@@ -338,7 +391,7 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 
                     NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
 
-                    _sessionStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
+                    _localStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
                     break;
 
                 case WebWalletState.WaitingForSig:
@@ -358,20 +411,12 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                             Signature = messageSignature.Signature
                         };
 
-                        var isValid = await Http.PostAsync<bool>("/wallet/verify", signableMessage);
-                        if (isValid)
-                        {
-                            //do some event
-                        }
-                        else
-                        {
-                            //do another event
-                        }
+                        await Http.PostAsync<bool>("api/wallet/verify", signableMessage);
                     }
                     catch { }
                     finally
                     {
-                        _sessionStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
+                        _localStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
                     }
                     break;
 
@@ -389,13 +434,15 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                         else
                         {
                             await SendTransactions(signedRequests, _sessionStorage.GetItemAsString(TX_TITLE));
+
+                            await RunPostTxSendProcess();
                         }
                     }
                     catch { }
                     finally
                     {
                         _sessionStorage.RemoveItem(TX_TITLE);
-                        _sessionStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
+                        _localStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
                     }
                     break;
             }

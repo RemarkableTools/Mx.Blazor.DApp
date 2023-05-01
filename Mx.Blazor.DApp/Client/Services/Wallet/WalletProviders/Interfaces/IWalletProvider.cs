@@ -1,6 +1,6 @@
 ﻿using Mx.NET.SDK.Domain;
 
-namespace Mx.Blazor.DApp.Client.Services.WalletProviders.Interfaces
+namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces
 {
     public interface IWalletProvider
     {
