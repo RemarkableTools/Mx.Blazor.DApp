@@ -1,6 +1,5 @@
 ﻿using Mx.Blazor.DApp.Client.Application.Constants;
 using static Mx.Blazor.DApp.Client.Application.Constants.BrowserLocalStorage;
-using static Mx.Blazor.DApp.Client.Application.Constants.WalletType;
 
 namespace Mx.Blazor.DApp.Client.Shared.Components.Modals
 {
@@ -17,7 +16,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Modals
 
         private void SetCancelButton()
         {
-            if (SessionStorage.GetItem<WalletType>(WALLET_TYPE) == Extension)
+            if (LocalStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Extension)
                 CanCancel = true;
             else
                 CanCancel = false;

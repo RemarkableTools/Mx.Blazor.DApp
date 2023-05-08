@@ -20,6 +20,14 @@
     width: 16px;
 }
 
+.bi-x-circle {
+    font-size: .8rem;
+}
+
+.dots {
+    margin: 0 2px;
+}
+
 .dismiss {
     cursor: pointer;
     margin-top: -5px;
@@ -44,10 +52,4 @@
 
 .tx-icon a {
     color: var(--c-default);
-}
-
-.truncate-front {
-    direction: rtl;
-    text-align: left;
-    margin-left: -2px;
 }

@@ -30,6 +30,11 @@ namespace Mx.Blazor.DApp.Client.Services
                     await DoProcessID1();
                     break;
             }
+            Clear();
+        }
+
+        public void Clear()
+        {
             _sessionStorage.RemoveItem(POST_PROCESS);
             _sessionStorage.RemoveItem(POST_PROCESS_OBJECT);
         }

@@ -20,6 +20,8 @@ using Mx.Blazor.DApp.Client.Services.Containers;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders;
 using Mx.Blazor.DApp.Client.Application.Exceptions;
+using Mx.NET.SDK.Domain.Helper;
+using Org.BouncyCastle.Utilities.Encoders;
 
 namespace Mx.Blazor.DApp.Client.Services.Wallet
 {
@@ -74,7 +76,14 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         public async Task ValidateWalletConnection(AccountToken? accountToken)
         {
             if (IsConnected()) return; //because xPortal wallet always validates at refresh
-            if (accountToken == null || !accountToken.IsValid()) return;
+            if (accountToken == null || !accountToken.IsValid())
+            {
+                WalletProvider = default!;
+                _localStorage.RemoveItem(WALLET_TYPE);
+
+                await JsRuntime.InvokeVoidAsync("alert", "Wallet Token is not valid");
+                return;
+            }
 
             var connectionRequest = new ConnectionRequest()
             {
@@ -283,6 +292,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             if (signedTransaction == "canceled")
             {
                 await WalletProvider.TransactionIsCanceled();
+                _postTxSendService.Clear();
                 return null;
             }
 
@@ -296,8 +306,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 var transaction = JsonWrapper.Deserialize<TransactionRequestDto>(signedTransaction);
                 return await SendTransaction(transaction, title);
             }
-            catch (Exception ex)
+            catch
             {
+                _postTxSendService.Clear();
                 return null;
             }
         }
@@ -324,6 +335,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             if (signedTransactions == "canceled")
             {
                 await WalletProvider.TransactionIsCanceled();
+                _postTxSendService.Clear();
                 return null;
             }
 
@@ -339,6 +351,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             }
             catch
             {
+                _postTxSendService.Clear();
                 return null;
             }
         }
@@ -369,8 +382,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         }
 
         //After TX is sent successfully (tx is sent but you don't know if it will be success or fail at this stage), you can use this function to do a Post (Send) Process like a request to Mx.Blazor.DApp.Sever API
+
         //You can use the events TransactionsContainer.TxExecuted or TransactionsContainer.HashesExecuted to do a process after the TX is processed and you know the end state (success/fail/etc.)
-        //Keep in mind that the event will not be triggered if the user will close the website before the tx is processed, so if you want to update the database it might not run...
+        //Keep in mind that the TxExecuted/HashesExecuted events will not be triggered if the user will close the website before the tx is processed, so if you want to do an UPDATE in database it might not run...
         public async Task RunPostTxSendProcess()
         {
             await _postTxSendService.Run();
@@ -411,7 +425,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                             Signature = messageSignature.Signature
                         };
 
-                        await Http.PostAsync<bool>("api/wallet/verify", signableMessage);
+                        Console.WriteLine(await Http.PostAsync<bool>("api/wallet/verify", signableMessage));
                     }
                     catch { }
                     finally

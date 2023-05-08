@@ -5,6 +5,7 @@ using Mx.Blazor.DApp.Shared.Connection;
 using static Mx.Blazor.DApp.Client.Application.Constants.DAppConstants;
 using Mx.NET.SDK.Domain.Data.Block;
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
+using Mx.NET.SDK.Domain.Helper;
 
 namespace Mx.Blazor.DApp.Client.Services
 {
