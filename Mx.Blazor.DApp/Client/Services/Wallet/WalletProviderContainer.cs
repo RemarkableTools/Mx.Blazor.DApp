@@ -21,7 +21,6 @@ using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders;
 using Mx.Blazor.DApp.Client.Application.Exceptions;
 using Mx.NET.SDK.Domain.Helper;
-using Org.BouncyCastle.Utilities.Encoders;
 
 namespace Mx.Blazor.DApp.Client.Services.Wallet
 {
