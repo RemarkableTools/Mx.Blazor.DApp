@@ -188,9 +188,10 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         public async Task ConnectToExtensionWallet()
         {
             WalletProvider = new ExtensionWalletProvider(JsRuntime);
-            _authToken = await _nativeAuthService.GenerateToken();
             try
             {
+                _authToken = await _nativeAuthService.GenerateToken();
+
                 await WalletProvider.Init();
                 var accountInfo = await WalletProvider.Login(_authToken);
                 await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
@@ -201,9 +202,10 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         public async Task ConnectToXPortalWallet()
         {
             WalletProvider = new XPortalWalletProvider(JsRuntime);
-            _authToken = await _nativeAuthService.GenerateToken();
             try
             {
+                _authToken = await _nativeAuthService.GenerateToken();
+
                 await WalletProvider.Init();
                 await WalletProvider.Login(_authToken);
             }
@@ -213,9 +215,10 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         public async Task ConnectToWebWallet()
         {
             WalletProvider = new WebWalletProvider(JsRuntime);
-            _authToken = await _nativeAuthService.GenerateToken();
             try
             {
+                _authToken = await _nativeAuthService.GenerateToken();
+
                 await WalletProvider.Init();
                 await WalletProvider.Login(_authToken);
             }

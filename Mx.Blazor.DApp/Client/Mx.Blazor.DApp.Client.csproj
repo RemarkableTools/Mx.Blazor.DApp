@@ -17,6 +17,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.10" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RemarkableTools.Mx" Version="1.0.17" />
+    <PackageReference Include="RemarkableTools.Mx.NativeAuthClient" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,12 +41,6 @@
 
   <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="Shared\Components\Modals\WaitingForMessageSignatureModal.razor">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-    </Content>
   </ItemGroup>
   
 </Project>

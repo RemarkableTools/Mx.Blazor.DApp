@@ -9,6 +9,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
         {
             List,
             Error,
+            Error2,
             Verify,
             Loading
         };
@@ -113,10 +114,18 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
         {
             if (LedgerAddressIndex == -1) return;
 
-            AuthToken = await NativeAuth.GenerateToken();
-            SetLedgerState(LedgerStates.Verify);
-            await WalletProvider.ConnectToHardwareWallet(AuthToken);
-            AuthToken = null;
+            try
+            {
+                AuthToken = await NativeAuth.GenerateToken();
+                SetLedgerState(LedgerStates.Verify);
+                await WalletProvider.ConnectToHardwareWallet(AuthToken);
+                AuthToken = null;
+            }
+            catch
+            {
+                SetLedgerState(LedgerStates.Error2);
+                return;
+            }
         }
     }
 }

@@ -69,6 +69,16 @@
                         <h5 class="text-center">Check if Ledger is connected and MultiversX app is opened or try to reopen app on Ledger.</h5>
                     </div>
                 }
+                else if (LedgerState == LedgerStates.Error2)
+                {
+                    <div class="my-5">
+                        <div class="d-flex justify-content-center">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                        <h3 class="text-center text-danger mb-4">API error</h3>
+                        <h5 class="text-center">Could not generate login token</h5>
+                    </div>
+                }
                 else if (LedgerState == LedgerStates.Verify)
                 {
                     <div class="d-flex justify-content-center">
@@ -94,7 +104,7 @@
             </div>
             <div class="modal-footer py-2 pb-0">
                 <input id="LedgerAddressIndex" type="hidden" @bind-value="@LedgerAddressIndex" />
-                @if (LedgerState == LedgerStates.Error)
+                @if (LedgerState == LedgerStates.Error || LedgerState == LedgerStates.Error2)
                 {
                     <button type="button" class="btn btn-primary px-3 py-2 m-0 mb-4" @onclick="HardwareWalletLogin">Try Again</button>
                 }
