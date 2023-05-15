@@ -74,7 +74,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         public event Action? OnWalletDisconnected;
         public async Task ValidateWalletConnection(AccountToken? accountToken)
         {
-            if (IsConnected()) return; //because xPortal wallet always validates at refresh
+            if (IsConnected() || accessTokenExpired) return; //because xPortal wallet always validates at refresh
             if (accountToken == null || !accountToken.IsValid())
             {
                 WalletProvider = default!;
@@ -111,6 +111,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         public void WalletDisconnected()
         {
             WalletProvider = default!;
+            accessTokenExpired = false;
             _localStorage.RemoveItem(ACCESS_TOKEN);
             _localStorage.RemoveItem(ACCESS_TOKEN_EXPIRES);
             _localStorage.RemoveItem(ACCOUNT_TOKEN);
