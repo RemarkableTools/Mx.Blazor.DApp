@@ -5,6 +5,7 @@ using Mx.NET.SDK.Core.Domain;
 using Mx.NET.SDK.Core.Domain.Values;
 using static Mx.NET.SDK.TransactionsManager.EGLDTransactionRequest;
 using Mx.Blazor.DApp.Client.Application.Constants;
+using Microsoft.JSInterop;
 
 namespace Mx.Blazor.DApp.Client.Pages
 {
@@ -51,7 +52,11 @@ namespace Mx.Blazor.DApp.Client.Pages
             if (string.IsNullOrWhiteSpace(SignableMessageText)) return;
 
             var signMessage = await WalletProvider.SignMessage(new SignableMessage() { Message = SignableMessageText });
-            Console.WriteLine(signMessage);
+
+            if(signMessage == true)
+                await JsRuntime.InvokeVoidAsync("alert", "Message was successfully signed.");
+            else
+                await JsRuntime.InvokeVoidAsync("alert", "Message signature is invalid.");
         }
 
         public async void SignTransaction()
