@@ -18,7 +18,7 @@
                 foreach (var tx in AccountTransactions)
                 {
                     var explorerLink = $"{MultiversxNetwork.Provider.NetworkConfiguration.ExplorerUri}transactions/{tx.TxHash}";
-                    <a class="font-monospace text-decoration-none text-center text-break" href="@explorerLink" target="_blank">@tx.TxHash</a>
+                    <a class="font-monospace text-decoration-none text-center text-break mx-auto" href="@explorerLink" target="_blank">@tx.TxHash</a>
                 }
             }
         </div>

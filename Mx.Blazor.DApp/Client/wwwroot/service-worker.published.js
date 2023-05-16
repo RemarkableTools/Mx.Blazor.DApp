@@ -12,7 +12,7 @@ const offlineAssetsInclude = [/\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /
 const offlineAssetsExclude = [/^service-worker\.js$/];
 
 async function onInstall(event) {
-    console.info('Service worker: Install');
+    //console.info('Service worker: Install');
 
     // Activate the new service worker as soon as the old one is retired.
     self.skipWaiting();
@@ -26,7 +26,7 @@ async function onInstall(event) {
 }
 
 async function onActivate(event) {
-    console.info('Service worker: Activate');
+    //console.info('Service worker: Activate');
 
     // Delete unused caches
     const cacheKeys = await caches.keys();

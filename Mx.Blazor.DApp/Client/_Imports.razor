@@ -10,6 +10,7 @@
 
 @using Mx.Blazor.DApp.Client
 @using Mx.Blazor.DApp.Client.Services;
+@using Mx.Blazor.DApp.Client.Services.Wallet;
 @using Mx.Blazor.DApp.Client.Shared
 @using Mx.Blazor.DApp.Client.Application.ExtensionMethods
 @using Mx.Blazor.DApp.Client.Application.Constants
@@ -25,6 +26,8 @@
 @inject NavigationManager NavigationManager
 @inject Blazored.LocalStorage.ISyncLocalStorageService LocalStorage
 @inject Blazored.SessionStorage.ISyncSessionStorageService SessionStorage
+@inject WalletManagerService WalletManager
 @inject WalletProviderContainer WalletProvider
+@inject NativeAuthService NativeAuth
 @inject TransactionsContainer TransactionsContainer
 @inject AccountContainer AccountContainer

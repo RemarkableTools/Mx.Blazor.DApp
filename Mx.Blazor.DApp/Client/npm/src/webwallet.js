@@ -13,14 +13,14 @@ class WebWallet {
 
     async login(authToken) {
         sessionStorage.setItem("authToken", authToken);
-        sessionStorage.setItem("wallettype", "4");
-        sessionStorage.setItem("webwalletstate", "2");
+        localStorage.setItem("wallettype", "4");
+        localStorage.setItem("webwalletstate", "2");
         const callbackUrl = getCurrentLocation();
         await this.provider.login({ callbackUrl: callbackUrl, token: authToken });
     }
 
     getAddress() {
-        return sessionStorage.getItem("address") || "";
+        return localStorage.getItem("address") || "";
     }
 
     isConnected() {
@@ -37,7 +37,7 @@ class WebWallet {
 
     async signMessage(message) {
         sessionStorage.setItem("sigmessage", message);
-        sessionStorage.setItem("webwalletstate", "3");
+        localStorage.setItem("webwalletstate", "3");
 
         const signableMessage = new SignableMessage({
             message: Buffer.from(message)
@@ -49,7 +49,7 @@ class WebWallet {
     }
 
     async signTransaction(transactionRequest) {
-        sessionStorage.setItem("webwalletstate", "4");
+        localStorage.setItem("webwalletstate", "4");
 
         const transaction = new Transaction({
             nonce: transactionRequest.nonce,
@@ -69,7 +69,7 @@ class WebWallet {
     }
 
     async signTransactions(transactionsRequest) {
-        sessionStorage.setItem("webwalletstate", "4");
+        localStorage.setItem("webwalletstate", "4");
 
         const transactions = transactionsRequest.map(transactionRequest =>
             new Transaction({

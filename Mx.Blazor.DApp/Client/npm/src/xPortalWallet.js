@@ -32,7 +32,7 @@ class XPortal {
         return {
             onClientLogin: async () => {
                 closeModal();
-                sessionStorage.setItem("wallettype", "2");
+                localStorage.setItem("wallettype", "2");
                 DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'XPortalClientConnect', JSON.stringify({ address: self.provider.address, signature: self.provider.signature }));
             },
             onClientLogout: async () => {

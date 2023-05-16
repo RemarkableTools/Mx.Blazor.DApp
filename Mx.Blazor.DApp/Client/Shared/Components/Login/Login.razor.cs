@@ -1,6 +1,5 @@
-﻿using Mx.Blazor.DApp.Client.Application.Helpers;
-using Microsoft.JSInterop;
-using static Mx.Blazor.DApp.Client.Application.Constants.BrowserStorage;
+﻿using Microsoft.JSInterop;
+using static Mx.Blazor.DApp.Client.Application.Constants.BrowserSessionStorage;
 
 namespace Mx.Blazor.DApp.Client.Shared.Components.Login
 {
@@ -10,6 +9,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
         {
             List,
             Error,
+            Error2,
             Verify,
             Loading
         };
@@ -114,10 +114,18 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
         {
             if (LedgerAddressIndex == -1) return;
 
-            AuthToken = GenerateAuthToken.Random();
-            SetLedgerState(LedgerStates.Verify);
-            await WalletProvider.ConnectToHardwareWallet(AuthToken);
-            AuthToken = null;
+            try
+            {
+                AuthToken = await NativeAuth.GenerateToken();
+                SetLedgerState(LedgerStates.Verify);
+                await WalletProvider.ConnectToHardwareWallet(AuthToken);
+                AuthToken = null;
+            }
+            catch
+            {
+                SetLedgerState(LedgerStates.Error2);
+                return;
+            }
         }
     }
 }

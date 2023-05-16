@@ -1,11 +1,11 @@
 ﻿using Mx.Blazor.DApp.Client.Application.ExtensionMethods;
-using Mx.Blazor.DApp.Client.Services.WalletProviders.Interfaces;
 using Microsoft.JSInterop;
 using Mx.Blazor.DApp.Client.Application.Exceptions;
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.NET.SDK.Domain;
+using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
 
-namespace Mx.Blazor.DApp.Client.Services.WalletProviders
+namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
 {
     public class WebWalletProvider : IWalletProvider
     {

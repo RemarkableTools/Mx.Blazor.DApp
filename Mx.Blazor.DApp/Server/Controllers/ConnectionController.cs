@@ -7,7 +7,7 @@ using Mx.Blazor.DApp.Shared.Connection;
 namespace Mx.Blazor.DApp.Server.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class ConnectionController : ControllerBase
     {
         private readonly IConnectionService _connectionService;

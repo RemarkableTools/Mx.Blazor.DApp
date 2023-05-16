@@ -46,7 +46,7 @@ class HardwareWallet {
             const { address, signature } = await this.provider.tokenLogin({ addressIndex: addressIndex, token: payloadToSign });
 
             loginApproved();
-            sessionStorage.setItem("wallettype", "3");
+            localStorage.setItem("wallettype", "3");
             $("#LedgerConnectModal").modal("hide");
             $("#WalletConnectionsModal").modal("hide");
             return JSON.stringify({

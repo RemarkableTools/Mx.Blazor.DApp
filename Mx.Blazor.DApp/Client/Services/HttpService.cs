@@ -1,10 +1,12 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
+using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using Mx.Blazor.DApp.Client.Application.Exceptions;
 using Mx.Blazor.DApp.Shared.Models;
 using Newtonsoft.Json;
-using static Mx.Blazor.DApp.Client.Application.Constants.BrowserStorage;
+using static Mx.Blazor.DApp.Client.Application.Constants.BrowserLocalStorage;
 
 namespace Mx.Blazor.DApp.Client.Services
 {
@@ -23,20 +25,20 @@ namespace Mx.Blazor.DApp.Client.Services
     public class HttpService : IHttpService
     {
         private readonly HttpClient _httpClient;
-        private readonly ISyncSessionStorageService _sessionStorage;
+        private readonly ISyncLocalStorageService _localStorage;
 
         public HttpService(
             HttpClient httpClient,
-            ISyncSessionStorageService sessionStorage)
+            ISyncLocalStorageService localStorage)
         {
             _httpClient = httpClient;
-            _sessionStorage = sessionStorage;
+            _localStorage = localStorage;
         }
 
         public async Task<HttpResponseMessage> GetAsync(string? requestUri)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-            return await _httpClient.GetAsync(request.RequestUri);
+            return await SendRequest(request);
         }
 
         public async Task<T> GetAsync<T>(string? requestUri)
@@ -85,7 +87,7 @@ namespace Mx.Blazor.DApp.Client.Services
         {
             try
             {
-                var accessToken = _sessionStorage.GetItemAsString(ACCESS_TOKEN);
+                var accessToken = _localStorage.GetItemAsString(ACCESS_TOKEN);
                 var isApiUrl = !request.RequestUri.IsAbsoluteUri;
                 if (accessToken != null && isApiUrl)
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -102,6 +104,9 @@ namespace Mx.Blazor.DApp.Client.Services
             //throw exception on error response
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new UnauthorizedAccessException();
+
                 var content = await response.Content.ReadAsStringAsync();
                 var httpResponse = JsonConvert.DeserializeObject<HttpResponse>(content) ?? new HttpResponse();
                 throw new HttpException(httpResponse);
@@ -123,6 +128,9 @@ namespace Mx.Blazor.DApp.Client.Services
             //throw exception on error response
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new UnauthorizedAccessException();
+
                 var httpResponse = JsonConvert.DeserializeObject<HttpResponse>(content) ?? new HttpResponse();
                 throw new HttpException(httpResponse);
             }

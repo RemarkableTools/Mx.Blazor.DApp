@@ -1,4 +1,5 @@
 ﻿.toast {
+    user-select: none;
     position: relative;
     background-color: var(--bs-gray-900);
     box-shadow: 0 1px 6px 0 var(--c-shadow);
@@ -17,4 +18,10 @@
 .bi-exclamation-diamond-fill {
     font-size: 2rem;
     color: goldenrod;
+}
+
+@media(hover: hover) and (pointer: fine) {
+    .dismiss:hover {
+        color: var(--bs-gray-600);
+    }
 }

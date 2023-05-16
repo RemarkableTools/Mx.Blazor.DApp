@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Mx.Blazor.DApp.Client.Services.Wallet;
 
 namespace Mx.Blazor.DApp.Client.Shared
 {
@@ -14,9 +15,9 @@ namespace Mx.Blazor.DApp.Client.Shared
             collapseNavMenu = !collapseNavMenu;
         }
 
-        public async void Disconnect()
+        public void Disconnect()
         {
-            await WalletProvider.Logout();
+            WalletManagerService.Logout();
         }
     }
 }

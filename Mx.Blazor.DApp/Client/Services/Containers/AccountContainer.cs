@@ -5,16 +5,12 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 {
     public class AccountContainer
     {
-        public Account? Account;
-        public AccountToken[]? AccountTokens;
+        public Account Account { get; set; } = default!;
+        public AccountToken[] AccountTokens { get; set; } = default!;
 
         public async Task Initialize(string address)
         {
-            if (Account != null && Account.Address.Bech32 != address)
-            {
-                Account = null;
-                AccountTokens = null;
-            }
+            if (Account != null) return;
 
             try
             {
@@ -24,7 +20,13 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             catch { }
         }
 
-        public async Task Sync()
+        public void Clear()
+        {
+            Account = default!;
+            AccountTokens = default!;
+        }
+
+        public async Task SyncAll()
         {
             await SyncAccount();
             await SyncAccountTokens();

@@ -8,6 +8,11 @@ namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
 {
     public static class UrlHelper
     {
+        public static string GetHost(this string urlString)
+        {
+            return new Uri(urlString).Host;
+        }
+
         public static string GetUrlWithoutParameters(this string urlString)
         {
             int idx = urlString.IndexOf('?');

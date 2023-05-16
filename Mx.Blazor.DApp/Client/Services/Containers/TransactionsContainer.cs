@@ -1,5 +1,5 @@
-﻿using static Mx.Blazor.DApp.Client.Application.Constants.DappConstants;
-using static Mx.Blazor.DApp.Client.Application.Constants.BrowserStorage;
+﻿using static Mx.Blazor.DApp.Client.Application.Constants.DAppConstants;
+using static Mx.Blazor.DApp.Client.Application.Constants.BrowserSessionStorage;
 using Mx.Blazor.DApp.Client.Models;
 using Blazored.SessionStorage;
 
