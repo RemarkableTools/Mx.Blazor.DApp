@@ -1,5 +1,4 @@
-﻿import qs from "qs";
-import { WalletProvider } from "@multiversx/sdk-web-wallet-provider";
+﻿import { WalletProvider } from "@multiversx/sdk-web-wallet-provider";
 import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
     cancelTxToast
