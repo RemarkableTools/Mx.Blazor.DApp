@@ -93,12 +93,6 @@ class WebWallet {
 
 export const Obj = new WebWallet();
 
-function getUrlParams() {
-    const queryString = window.location.search.slice(1);
-    const params = qs.parse(queryString);
-    return params;
-}
-
 function getCurrentLocation() {
     return window.location.href.split("?")[0];
 }

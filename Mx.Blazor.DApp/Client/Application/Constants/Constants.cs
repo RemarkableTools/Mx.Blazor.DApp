@@ -35,7 +35,8 @@
         Extension= 1,
         XPortal,
         Hardware,
-        Web
+        Web,
+        WebView
     }
 
     public enum WebWalletState

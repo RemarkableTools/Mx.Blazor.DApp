@@ -160,6 +160,13 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
         public async Task InitializeAsync()
         {
+            var accessToken = await JsRuntime.InvokeAsync<string>("getAccessToken");
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                await ConnectToWebView(accessToken);
+                return;
+            }
+
             if (WalletProvider is null) return;
 
             switch (_localStorage.GetItem<WalletType>(WALLET_TYPE))
@@ -232,6 +239,27 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             //Init is previously called from modal
             var accountInfo = await WalletProvider.Login(_authToken);
             await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+        }
+
+        public async Task ConnectToWebView(string accessToken)
+        {
+            WalletProvider = new WebViewProvider(JsRuntime);
+            var parts = accessToken.Split('.');
+            _authToken = Encoding.UTF8.GetString(Convert.FromBase64String(Pad(parts[1])));
+            var accountToken = new AccountToken()
+            {
+                Address = Encoding.UTF8.GetString(Convert.FromBase64String(Pad(parts[0]))),
+                Signature = parts[2]
+            };
+            await ValidateWalletConnection(accountToken);
+        }
+
+        private static string Pad(string str)
+        {
+            if (str.Length % 4 == 0) return str;
+            else if (str.Length % 4 == 2) return str += "==";
+            else if (str.Length % 4 == 3) return str += "=";
+            return str;
         }
 
         public bool IsConnected()

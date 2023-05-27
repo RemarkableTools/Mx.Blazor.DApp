@@ -14,7 +14,7 @@ namespace Mx.Blazor.DApp.Shared.Connection
         {
             var parts = authToken.Split('.');
             Host = Unescape(Encoding.UTF8.GetString(Convert.FromBase64String(Pad(parts[0]))));
-            BlockHash = Unescape(Encoding.UTF8.GetString(Convert.FromBase64String(Pad(parts[1]))));
+            BlockHash = parts[1];
             TimeToLive = int.Parse(parts[2]);
             ExtraInfo = JsonWrapper.Deserialize<ExtraInfo>(Unescape(Encoding.UTF8.GetString(Convert.FromBase64String(Pad(parts[3])))));
         }
