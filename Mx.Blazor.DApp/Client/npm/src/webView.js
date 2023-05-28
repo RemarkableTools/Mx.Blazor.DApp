@@ -1,9 +1,5 @@
 import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
-    signingMessageModal,
-    signingMessageModalClose,
-    signingModal,
-    signingModalClose,
     cancelTxToast,
     isWindowAvailable,
     detectCurrentPlatform,
@@ -79,7 +75,10 @@ class WebView {
     }
 
     async logout() {
-
+        try {
+            requestMethods.logout[currentPlatform]();
+        } catch (err) {
+        }
     }
 
     transactionCanceled() {
@@ -87,27 +86,41 @@ class WebView {
     }
 
     async signMessage(message) {
-        signingMessageModal("xPortal");
-
         const signableMessage = new SignableMessage({
             message: Buffer.from(message)
         });
 
         try {
-            await this.provider.signMessage(signableMessage);
-            return JSON.stringify(signableMessage.toJSON(), null, 4);
+            requestMethods.signMessage[currentPlatform](signableMessage);
+            const signedMessage = new Promise((resolve) => {
+                function handleSignMessageResponse(eventData) {
+                    const { message, type } = eventData;
+                    if (type === WebViewProviderResponseEnums.signMessageResponse) {
+                        try {
+                            const { signature, error } = message;
+                            if (!error) {
+                                resolve(signature);
+                            } else {
+                                throw error;
+                            }
+                        } catch (err) {
+                            throw err;
+                        }
+                    }
+                    if (document) {
+                        document.removeEventListener('message', handleSignMessageResponse);
+                    }
+                }
+                handleWaitForMessage(handleSignMessageResponse);
+            });
+            return await signedMessage;
         }
         catch (err) {
             return "canceled";
         }
-        finally {
-            signingMessageModalClose();
-        }
     }
 
     async signTransaction(transactionRequest) {
-        signingModal("xPortal");
-
         const transaction = new Transaction({
             nonce: transactionRequest.nonce,
             value: transactionRequest.value,
@@ -122,19 +135,14 @@ class WebView {
 
         try {
             const signedTransactions = await this.signTransactions([transaction]);
-            return signedTransaction[0];
+            return signedTransactions[0];
         }
         catch (err) {
             return "canceled";
         }
-        finally {
-            signingModalClose();
-        }
     }
 
     async signTransactions(transactionsRequest) {
-        signingModal("xPortal");
-
         const transactions = transactionsRequest.map(transactionRequest =>
             new Transaction({
                 nonce: transactionRequest.nonce,
@@ -171,9 +179,7 @@ class WebView {
 
                         try {
                             if (!error) {
-                                resolve(
-                                    transactions.map((tx) => Transaction.fromPlainObject(tx))
-                                );
+                                resolve(transactions.map((tx) => Transaction.fromPlainObject(tx)));
                             } else {
                                 throw error;
                             }
@@ -188,14 +194,10 @@ class WebView {
 
                 handleWaitForMessage(handleSignResponse);
             });
-
             return await signedTransactions;
         }
         catch (err) {
             return "canceled";
-        }
-        finally {
-            signingModalClose();
         }
     }
 }
@@ -221,19 +223,19 @@ export const requestMethods = {
                 transactions,
                 targetOrigin
             ),
-        [PlatformsEnum.reactNative]: (message) =>
+        [PlatformsEnum.reactNative]: (transactions) =>
             window?.ReactNativeWebView.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.signTransactionsRequest,
-                    message
+                    transactions
                 })
             ),
 
-        [PlatformsEnum.web]: (message) =>
+        [PlatformsEnum.web]: (transactions) =>
             window?.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.signTransactionsRequest,
-                    message
+                    transactions
                 }),
                 targetOrigin
             )
