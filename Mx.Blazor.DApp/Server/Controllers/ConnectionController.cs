@@ -18,10 +18,9 @@ namespace Mx.Blazor.DApp.Server.Controllers
         }
 
         [HttpPost("verify")]
-        public IActionResult Verify(ConnectionRequest request)
+        public IActionResult Verify(AccessToken accessToken)
         {
-            var response = _connectionService.Verify(request);
-
+            var response = _connectionService.Verify(accessToken.Value);
             if (response == null)
                 return BadRequest(new HttpResponse()
                 {

@@ -19,7 +19,7 @@ class WebWallet {
     }
 
     getAddress() {
-        return localStorage.getItem("address") || "";
+        return JSON.parse(localStorage.getItem("accountToken")).Address || "";
     }
 
     isConnected() {

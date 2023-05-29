@@ -25,6 +25,7 @@ export const handleWaitForMessage = (eventHandler) => {
             eventHandler(eventData);
         } catch (err) {
             console.error('error parsing response');
+            throw err;
         }
     };
     if (document) {
@@ -39,7 +40,7 @@ class WebView {
     async login() {
         try {
             requestMethods.login[currentPlatform]();
-            const authToken = new Promise((resolve) => {
+            const accessToken = new Promise((resolve) => {
                 function handleTokenReceived(eventData) {
                     const { message, type } = eventData;
                     if (type === WebViewProviderResponseEnums.loginResponse) {
@@ -60,14 +61,14 @@ class WebView {
                 }
                 handleWaitForMessage(handleTokenReceived);
             });
-            return await authToken;
+            return await accessToken;
         } catch (err) {
             return "";
         }
     }
 
     getAddress() {
-        return localStorage.getItem("address") || "";
+        return JSON.parse(localStorage.getItem("accountToken")).Address || "";
     }
 
     isConnected() {
@@ -135,7 +136,7 @@ class WebView {
 
         try {
             const signedTransactions = await this.signTransactions([transaction]);
-            return signedTransactions[0];
+            return JSON.stringify(JSON.parse(signedTransactions)[0], null, 4);
         }
         catch (err) {
             return "canceled";
@@ -161,7 +162,7 @@ class WebView {
             const plainTransactions = transactions.map((tx) => tx.toPlainObject());
             requestMethods.signTransactions[currentPlatform](plainTransactions);
 
-            const signedTransactions = new Promise((resolve) => {
+            const signedTransactionsResponse = new Promise((resolve) => {
                 window.transactionsSigned = (txs, error) => {
                     txs = JSON.parse(txs);
                     if (error) {
@@ -191,10 +192,10 @@ class WebView {
                         document.removeEventListener('message', handleSignResponse);
                     }
                 }
-
                 handleWaitForMessage(handleSignResponse);
             });
-            return await signedTransactions;
+            var signedTransactions = await signedTransactionsResponse;
+            return JSON.stringify(signedTransactions.map(transaction => transaction.toSendable()), null, 4);
         }
         catch (err) {
             return "canceled";
@@ -223,19 +224,18 @@ export const requestMethods = {
                 transactions,
                 targetOrigin
             ),
-        [PlatformsEnum.reactNative]: (transactions) =>
-            window?.ReactNativeWebView.postMessage(
+        [PlatformsEnum.reactNative]: (message) =>
+            window.ReactNativeWebView?.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.signTransactionsRequest,
-                    transactions
+                    message
                 })
             ),
-
-        [PlatformsEnum.web]: (transactions) =>
-            window?.postMessage(
+        [PlatformsEnum.web]: (message) =>
+            window.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.signTransactionsRequest,
-                    transactions
+                    message
                 }),
                 targetOrigin
             )
@@ -244,14 +244,14 @@ export const requestMethods = {
         [PlatformsEnum.ios]: (message) =>
             window.webkit.messageHandlers.signMessage.postMessage(message),
         [PlatformsEnum.reactNative]: (message) =>
-            window?.ReactNativeWebView.postMessage(
+            window.ReactNativeWebView?.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.signMessageRequest,
                     message
                 })
             ),
         [PlatformsEnum.web]: (message) =>
-            window?.postMessage(
+            window.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.signMessageRequest,
                     message
@@ -263,13 +263,13 @@ export const requestMethods = {
         [PlatformsEnum.ios]: () =>
             window.webkit.messageHandlers.logout.postMessage(),
         [PlatformsEnum.reactNative]: () =>
-            window?.ReactNativeWebView.postMessage(
+            window.ReactNativeWebView?.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.logoutRequest
                 })
             ),
         [PlatformsEnum.web]: () =>
-            window?.postMessage(
+            window.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.logoutRequest
                 }),
@@ -280,13 +280,13 @@ export const requestMethods = {
         [PlatformsEnum.ios]: () =>
             window.webkit.messageHandlers.login.postMessage(),
         [PlatformsEnum.reactNative]: () =>
-            window?.ReactNativeWebView.postMessage(
+            window.ReactNativeWebView?.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.loginRequest
                 })
             ),
         [PlatformsEnum.web]: () =>
-            window?.postMessage(
+            window.postMessage(
                 JSON.stringify({
                     type: WebViewProviderRequestEnums.loginRequest
                 }),
