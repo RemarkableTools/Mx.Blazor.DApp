@@ -21,6 +21,8 @@ using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders;
 using Mx.Blazor.DApp.Client.Application.Exceptions;
 using Mx.NET.SDK.Domain.Helper;
+using static Mx.NET.SDK.NativeAuthClient.NativeAuthClient;
+using static Mx.NET.SDK.NativeAuthServer.Entities.NativeAuthToken;
 
 namespace Mx.Blazor.DApp.Client.Services.Wallet
 {
@@ -79,24 +81,22 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             {
                 WalletProvider = default!;
                 _localStorage.RemoveItem(WALLET_TYPE);
-
-                await JsRuntime.InvokeVoidAsync("alert", "Wallet Token is not valid");
                 return;
             }
 
-            var connectionRequest = new ConnectionRequest()
-            {
-                AccountToken = accountToken,
-                AuthToken = _authToken
-            };
+            var accessToken = GetAccessToken(accountToken.Address, _authToken, accountToken.Signature);
             _authToken = null;
 
+            await ValidateWalletConnection(accessToken);
+        }
+        public async Task ValidateWalletConnection(string accessToken)
+        {
             try
             {
-                var connectionToken = await Http.PostAsync<ConnectionToken>("api/connection/verify", connectionRequest);
+                var connectionToken = await Http.PostAsync<ConnectionToken>($"api/connection/verify", new AccessToken(accessToken));
                 _localStorage.SetItemAsString(ACCESS_TOKEN, connectionToken.AccessToken);
                 _localStorage.SetItem(ACCESS_TOKEN_EXPIRES, DateTime.Now.AddSeconds(NATIVE_AUTH_TTL).ToTimestamp());
-                _localStorage.SetItem(ACCOUNT_TOKEN, accountToken);
+                _localStorage.SetItem(ACCOUNT_TOKEN, connectionToken.AccountToken);
 
                 OnWalletConnected?.Invoke();
             }
@@ -140,6 +140,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 case WalletType.Web:
                     WalletProvider = new WebWalletProvider(JsRuntime);
                     break;
+                case WalletType.WebView:
+                    WalletProvider = new WebViewProvider(JsRuntime);
+                    break;
                 default:
                     _localStorage.RemoveItem(ACCESS_TOKEN);
                     _localStorage.RemoveItem(ACCESS_TOKEN_EXPIRES);
@@ -160,6 +163,13 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
         public async Task InitializeAsync()
         {
+            var accessToken = await JsRuntime.InvokeAsync<string>("getAccessToken");
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                await ConnectToWebView(accessToken);
+                return;
+            }
+
             if (WalletProvider is null) return;
 
             switch (_localStorage.GetItem<WalletType>(WALLET_TYPE))
@@ -176,6 +186,8 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 case WalletType.Web:
                     await WalletProvider.Init();
                     await WebWalletCheckingState();
+                    break;
+                case WalletType.WebView:
                     break;
             }
 
@@ -234,6 +246,21 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
         }
 
+        public async Task ConnectToWebView(string accessToken)
+        {
+            WalletProvider = new WebViewProvider(JsRuntime);
+            _localStorage.SetItem(WALLET_TYPE, WalletType.WebView);
+            var parts = accessToken.Split('.');
+            _authToken = DecodeValue(parts[1]);
+            var accountToken = new AccountToken()
+            {
+                Address = DecodeValue(parts[0]),
+                Signature = parts[2]
+            };
+            NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
+            await ValidateWalletConnection(accountToken);
+        }
+
         public bool IsConnected()
         {
             if (WalletProvider is null) return false;
@@ -249,7 +276,6 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         public async Task Logout()
         {
             if (WalletProvider is null) return;
-
 
             await WalletProvider.Logout();
             WalletDisconnected();
@@ -402,13 +428,23 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
                 case WebWalletState.LoggingIn:
                     var accountToken = NavigationManager.Uri.GetAccountTokenFromUrl();
-                    _authToken = _sessionStorage.GetItemAsString(AUTH_TOKEN);
-                    await ValidateWalletConnection(accountToken);
-                    _sessionStorage.RemoveItem(AUTH_TOKEN);
 
-                    NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
+                    if (accountToken.IsValid())
+                    {
+                        _authToken = _sessionStorage.GetItemAsString(AUTH_TOKEN);
+                        await ValidateWalletConnection(accountToken);
+                        _sessionStorage.RemoveItem(AUTH_TOKEN);
 
-                    _localStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
+                        NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
+
+                        _localStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
+                    }
+                    else
+                    {
+                        _localStorage.RemoveItem(WALLET_TYPE);
+                        _localStorage.RemoveItem(WEB_WALLET_STATE);
+                        _sessionStorage.RemoveItem(AUTH_TOKEN);
+                    }
                     break;
 
                 case WebWalletState.WaitingForSig:

@@ -1,5 +1,4 @@
-﻿import qs from "qs";
-import { WalletProvider } from "@multiversx/sdk-web-wallet-provider";
+﻿import { WalletProvider } from "@multiversx/sdk-web-wallet-provider";
 import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
     cancelTxToast
@@ -20,7 +19,7 @@ class WebWallet {
     }
 
     getAddress() {
-        return localStorage.getItem("address") || "";
+        return JSON.parse(localStorage.getItem("accountToken")).Address || "";
     }
 
     isConnected() {
@@ -92,12 +91,6 @@ class WebWallet {
 }
 
 export const Obj = new WebWallet();
-
-function getUrlParams() {
-    const queryString = window.location.search.slice(1);
-    const params = qs.parse(queryString);
-    return params;
-}
 
 function getCurrentLocation() {
     return window.location.href.split("?")[0];
