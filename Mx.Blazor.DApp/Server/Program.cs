@@ -10,7 +10,6 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages().AddNewtonsoftJson();
 
 builder.Services.AddScoped<IConnectionService, ConnectionService>();
-builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
