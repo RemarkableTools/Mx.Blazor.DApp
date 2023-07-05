@@ -59,7 +59,9 @@ class WebWallet {
             gasLimit: transactionRequest.gasLimit,
             data: new TransactionPayload(transactionRequest.data),
             chainID: transactionRequest.chainID,
-            version: transactionRequest.transactionVersion
+            version: transactionRequest.transactionVersion,
+            options: transactionRequest.options,
+            guardian: new Address(transactionRequest.guardian)
         });
 
         const callbackUrl = getCurrentLocation();
@@ -80,7 +82,9 @@ class WebWallet {
                 gasLimit: transactionRequest.gasLimit,
                 data: new TransactionPayload(transactionRequest.data),
                 chainID: transactionRequest.chainID,
-                version: transactionRequest.transactionVersion
+                version: transactionRequest.transactionVersion,
+                options: transactionRequest.options,
+                guardian: new Address(transactionRequest.guardian)
             })
         );
 

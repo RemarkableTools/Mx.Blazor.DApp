@@ -10,7 +10,7 @@ using Mx.Blazor.DApp.Client.Application.Constants;
 using Mx.Blazor.DApp.Client.Application.ExtensionMethods;
 using Mx.NET.SDK.Core.Domain.Helper;
 using Mx.NET.SDK.Domain;
-using Mx.NET.SDK.Provider.Dtos.API.Transactions;
+using Mx.NET.SDK.Provider.Dtos.Gateway.Transactions;
 using Mx.Blazor.DApp.Shared.Connection;
 using Mx.NET.SDK.Core.Domain;
 using Mx.Blazor.DApp.Client.Models;

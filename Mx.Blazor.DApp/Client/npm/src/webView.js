@@ -131,7 +131,9 @@ class WebView {
             gasLimit: transactionRequest.gasLimit,
             data: new TransactionPayload(transactionRequest.data),
             chainID: transactionRequest.chainID,
-            version: transactionRequest.transactionVersion
+            version: transactionRequest.transactionVersion,
+            options: transactionRequest.options,
+            guardian: new Address(transactionRequest.guardian)
         });
 
         try {
@@ -154,7 +156,9 @@ class WebView {
                 gasLimit: transactionRequest.gasLimit,
                 data: new TransactionPayload(transactionRequest.data),
                 chainID: transactionRequest.chainID,
-                version: transactionRequest.transactionVersion
+                version: transactionRequest.transactionVersion,
+                options: transactionRequest.options,
+                guardian: new Address(transactionRequest.guardian)
             })
         );
 

@@ -45,7 +45,9 @@ class XPortal {
     }
 
     async login(authToken) {
-        const { uri, approval } = await this.provider.connect();
+        const { uri, approval } = await this.provider.connect({
+            methods: ["mvx_signNativeAuthToken", "mvx_cancelAction"],
+        });
 
         await openModal(uri + "&token=" + authToken);
         await this.provider.login({ approval: approval, token: authToken });
@@ -98,12 +100,14 @@ class XPortal {
             gasLimit: transactionRequest.gasLimit,
             data: new TransactionPayload(transactionRequest.data),
             chainID: transactionRequest.chainID,
-            version: transactionRequest.transactionVersion
+            version: transactionRequest.transactionVersion,
+            options: transactionRequest.options,
+            guardian: new Address(transactionRequest.guardian)
         });
 
         try {
-            await this.provider.signTransaction(transaction);
-            return JSON.stringify(transaction.toSendable(), null, 4);
+            const signedTransaction = await this.provider.signTransaction(transaction);
+            return JSON.stringify(signedTransaction.toSendable(), null, 4);
         }
         catch (err) {
             return "canceled";
@@ -126,13 +130,15 @@ class XPortal {
                 gasLimit: transactionRequest.gasLimit,
                 data: new TransactionPayload(transactionRequest.data),
                 chainID: transactionRequest.chainID,
-                version: transactionRequest.transactionVersion
+                version: transactionRequest.transactionVersion,
+                options: transactionRequest.options,
+                guardian: new Address(transactionRequest.guardian)
             })
         );
 
         try {
-            await this.provider.signTransactions(transactions);
-            return JSON.stringify(transactions.map(transaction => transaction.toSendable()), null, 4);
+            const signedTransactions = await this.provider.signTransactions(transactions);
+            return JSON.stringify(signedTransactions.map(transaction => transaction.toSendable()), null, 4);
         }
         catch (err) {
             return "canceled";

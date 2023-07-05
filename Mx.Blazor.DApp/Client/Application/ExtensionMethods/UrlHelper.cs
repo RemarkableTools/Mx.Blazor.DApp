@@ -1,6 +1,6 @@
 ﻿using Mx.Blazor.DApp.Shared.Connection;
 using Mx.NET.SDK.Core.Domain.Helper;
-using Mx.NET.SDK.Provider.Dtos.API.Transactions;
+using Mx.NET.SDK.Provider.Dtos.Gateway.Transactions;
 using System.Text;
 using System.Web;
 
@@ -79,7 +79,10 @@ namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
                         Data = Convert.ToBase64String(Encoding.UTF8.GetBytes(args[$"data[{i}]"])),
                         ChainID = args[$"chainId[{i}]"],
                         Version = int.Parse(args[$"version[{i}]"]),
+                        Options = args[$"options[{i}]"] is null ? null : int.Parse(args[$"options[{i}]"]),
+                        Guardian = args[$"guardian[{i}]"],
                         Signature = args[$"signature[{i}]"],
+                        GuardianSignature = args[$"guardianSignature[{i}]"]
                     });
 
                 return JsonWrapper.Serialize(transactions);
