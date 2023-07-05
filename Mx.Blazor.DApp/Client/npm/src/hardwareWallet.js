@@ -51,10 +51,10 @@ class HardwareWallet {
             $("#WalletConnectionsModal").modal("hide");
             return JSON.stringify({
                 address: address || "",
-                signature: signature.hex()
+                signature: signature.toString('hex')
             });
         }
-        catch {
+        catch (err) {
             loginNotApproved();
             $("#LedgerConnectModal").modal("hide");
             return JSON.stringify({
@@ -112,11 +112,13 @@ class HardwareWallet {
                 gasLimit: transactionRequest.gasLimit,
                 data: new TransactionPayload(transactionRequest.data),
                 chainID: transactionRequest.chainID,
-                version: transactionRequest.transactionVersion
+                version: transactionRequest.transactionVersion,
+                options: transactionRequest.options,
+                guardian: new Address(transactionRequest.guardian)
             });
 
-            await this.provider.signTransaction(transaction);
-            return JSON.stringify(transaction.toSendable(), null, 4);
+            const signedTransaction = await this.provider.signTransaction(transaction);
+            return JSON.stringify(signedTransaction.toSendable(), null, 4);
         }
         catch (err) {
             return "canceled";
@@ -140,11 +142,13 @@ class HardwareWallet {
                     gasLimit: transactionRequest.gasLimit,
                     data: new TransactionPayload(transactionRequest.data),
                     chainID: transactionRequest.chainID,
-                    version: transactionRequest.transactionVersion
+                    version: transactionRequest.transactionVersion,
+                    options: transactionRequest.options,
+                    guardian: new Address(transactionRequest.guardian)
                 })
             );
-            await this.provider.signTransactions(transactions);
-            return JSON.stringify(transactions.map(transaction => transaction.toSendable()), null, 4);
+            const signedTransactions = await this.provider.signTransactions(transactions);
+            return JSON.stringify(signedTransactions.map(transaction => transaction.toSendable()), null, 4);
         }
         catch (err) {
             return "canceled";
