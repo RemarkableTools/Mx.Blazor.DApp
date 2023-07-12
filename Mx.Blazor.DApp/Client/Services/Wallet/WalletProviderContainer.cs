@@ -449,7 +449,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
                 case WebWalletState.WaitingForSig:
                     var signature = NavigationManager.Uri.GetSignatureFromUrl();
-                    var message = _sessionStorage.GetItemAsString(SIG_MESSAGE);
+                    var message = _sessionStorage.GetItemAsString(SIG_MESSAGE) ?? "";
                     _sessionStorage.RemoveItem(SIG_MESSAGE);
 
                     NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
