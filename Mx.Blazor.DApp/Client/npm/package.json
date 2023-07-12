@@ -11,9 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "@multiversx/sdk-core": "^12.4.3",
-    "@multiversx/sdk-extension-provider": "^3.0.0-alpha.1",
+    "@multiversx/sdk-extension-provider": "^3.0.0",
     "@multiversx/sdk-hw-provider": "^6.1.1",
-    "@multiversx/sdk-wallet-connect-provider": "^4.0.0",
+    "@multiversx/sdk-wallet-connect-provider": "^4.0.1",
     "@multiversx/sdk-web-wallet-provider": "^3.0.0",
     "@walletconnect/qrcode-modal": "^1.8.0"
   },
