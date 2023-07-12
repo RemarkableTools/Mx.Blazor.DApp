@@ -55,7 +55,7 @@ namespace Mx.Blazor.DApp.Client.Pages
 
             if (signMessage == true)
                 await JsRuntime.InvokeVoidAsync("alert", "Message was successfully signed.");
-            else
+            else if (signMessage == false)
                 await JsRuntime.InvokeVoidAsync("alert", "Message signature is invalid.");
         }
 
