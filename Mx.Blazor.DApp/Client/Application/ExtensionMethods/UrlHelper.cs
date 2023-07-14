@@ -66,8 +66,9 @@ namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
 
             try
             {
+                var len = args.AllKeys.Where(k => k.StartsWith("nonce[")).Count();
                 var transactions = new List<TransactionRequestDto>();
-                for (var i = 0; i < args.Count / 10; i++)
+                for (var i = 0; i < len; i++)
                     transactions.Add(new TransactionRequestDto()
                     {
                         Nonce = ulong.Parse(args[$"nonce[{i}]"]),
