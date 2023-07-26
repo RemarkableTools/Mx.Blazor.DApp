@@ -6,11 +6,11 @@ namespace Mx.Blazor.DApp.Client.Application.Constants
 {
     public class MultiversxNetwork
     {
-        public static MultiversxProvider Provider
+        public static ApiProvider Provider
         {
-            //get => new(new MultiversxNetworkConfiguration(Network.MainNet));
-            get => new(new MultiversxNetworkConfiguration(Network.DevNet));
-            //get => new(new MultiversxNetworkConfiguration(Network.TestNet));
+            //get => new(new ApiNetworkConfiguration(Network.MainNet));
+            get => new(new ApiNetworkConfiguration(Network.DevNet));
+            //get => new(new ApiNetworkConfiguration(Network.TestNet));
         }
 
         public static TimeSpan TxCheckTime

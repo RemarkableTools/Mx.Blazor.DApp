@@ -1,5 +1,5 @@
 ﻿using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
-using Mx.NET.SDK.Domain.Data.Account;
+using Mx.NET.SDK.Domain.Data.Accounts;
 
 namespace Mx.Blazor.DApp.Client.Services.Containers
 {

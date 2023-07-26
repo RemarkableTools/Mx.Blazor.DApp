@@ -1,6 +1,6 @@
 ﻿using Mx.Blazor.DApp.Shared.Connection;
 using Mx.NET.SDK.Core.Domain.Helper;
-using Mx.NET.SDK.Provider.Dtos.Gateway.Transactions;
+using Mx.NET.SDK.Provider.Dtos.Common.Transactions;
 using System.Text;
 using System.Web;
 
