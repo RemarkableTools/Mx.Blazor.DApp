@@ -2,7 +2,7 @@
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using static Mx.Blazor.DApp.Client.Application.Constants.DAppConstants;
 using Mx.Blazor.DApp.Client.Models;
-using Mx.NET.SDK.Domain.Data.Transaction;
+using Mx.NET.SDK.Domain.Data.Transactions;
 using Mx.NET.SDK.Domain.Exceptions;
 
 namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
