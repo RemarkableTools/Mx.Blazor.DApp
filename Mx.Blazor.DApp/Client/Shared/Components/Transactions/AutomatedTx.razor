@@ -44,7 +44,7 @@
                     <i class="bi bi-x-circle-fill fs-4 text-danger" title="failed"></i>
                 </div>
             }
-            <div class="title">@TransactionModel.Title</div>
+            <div class="title text-truncate">@TransactionModel.Title</div>
         </div>
         <i class="dismiss bi bi-x fs-4 fw-bold" title="dismiss" @onclick="() =>{SyncToken.Cancel(); Dismiss.InvokeAsync(TransactionModel); }"></i>
     </div>
