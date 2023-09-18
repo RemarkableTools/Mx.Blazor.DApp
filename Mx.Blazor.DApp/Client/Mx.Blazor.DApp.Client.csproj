@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.22" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.22" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="RemarkableTools.Mx" Version="2.0.9" />
+    <PackageReference Include="RemarkableTools.Mx" Version="2.0.13" />
     <PackageReference Include="RemarkableTools.Mx.NativeAuthClient" Version="1.0.3" />
   </ItemGroup>
 
