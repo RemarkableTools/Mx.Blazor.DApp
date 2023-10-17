@@ -22,17 +22,16 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
 
         protected override async Task OnInitializedAsync()
         {
-            if (!TransactionModel.Transactions.Select(t => t.Status == "pending").Any())
-                return;
-
             CancellationToken cancellationToken = SyncToken.Token;
             await Task.Factory.StartNew(async () =>
             {
+                var allExecuted = true;
                 for (int i = 0; i < TransactionModel.Transactions.Count; i++)
                 {
                     if (TransactionModel.Transactions[i].Status != "pending")
                         continue;
 
+                    allExecuted = false;
                     try
                     {
                         var transaction = Transaction.From(TransactionModel.Transactions[i].Hash);
@@ -65,8 +64,12 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
                         await Update.InvokeAsync(TransactionModel);
                     }
                 }
-                TransactionsContainer.TransactionsExecuted(TransactionModel.Transactions.Select(t => t.Hash).ToArray());
-                StateHasChanged();
+
+                if (!allExecuted)
+                {
+                    TransactionsContainer.TransactionsExecuted(TransactionModel.Transactions.Select(t => t.Hash).ToArray());
+                    StateHasChanged();
+                }
 
                 if (TX_DISMISS_TIME > 0)
                 {
