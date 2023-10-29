@@ -1,5 +1,8 @@
 ﻿using Microsoft.JSInterop;
+using Mx.NET.SDK.Configuration;
 using static Mx.Blazor.DApp.Client.Application.Constants.BrowserSessionStorage;
+using static Mx.Blazor.DApp.Client.Application.Constants.BrowserLocalStorage;
+using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 
 namespace Mx.Blazor.DApp.Client.Shared.Components.Login
 {
@@ -49,7 +52,12 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
 
         public async void WebWalletLogin()
         {
-            await WalletProvider.ConnectToWebWallet();
+            await WalletProvider.ConnectToWebWallet(Provider.NetworkConfiguration.WebWalletUri.AbsoluteUri);
+        }
+
+        public async void XAliasWalletLogin()
+        {
+            await WalletProvider.ConnectToWebWallet(Provider.NetworkConfiguration.XAliasWalletUri.AbsoluteUri);
         }
 
         private void SetLedgerState(LedgerStates state)

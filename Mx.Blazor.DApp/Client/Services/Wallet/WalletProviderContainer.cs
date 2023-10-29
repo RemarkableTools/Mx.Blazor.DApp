@@ -117,6 +117,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             _localStorage.RemoveItem(ACCOUNT_TOKEN);
             _localStorage.RemoveItem(WALLET_TYPE);
             _localStorage.RemoveItem(WEB_WALLET_STATE);
+            _localStorage.RemoveItem(WEB_WALLET_ADDRESS);
             _localStorage.RemoveAllWcItems();
 
             OnWalletDisconnected?.Invoke();
@@ -184,7 +185,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                     await WalletProvider.Init();
                     break;
                 case WalletType.Web:
-                    await WalletProvider.Init();
+                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_ADDRESS));
                     await WebWalletCheckingState();
                     break;
                 case WalletType.WebView:
@@ -224,19 +225,6 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             catch { }
         }
 
-        public async Task ConnectToWebWallet()
-        {
-            WalletProvider = new WebWalletProvider(JsRuntime);
-            try
-            {
-                _authToken = await _nativeAuthService.GenerateToken();
-
-                await WalletProvider.Init();
-                await WalletProvider.Login(_authToken);
-            }
-            catch { }
-        }
-
         public async Task ConnectToHardwareWallet(string authToken)
         {
             WalletProvider = new HardwareWalletProvider(JsRuntime);
@@ -244,6 +232,20 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             //Init is previously called from modal
             var accountInfo = await WalletProvider.Login(_authToken);
             await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+        }
+
+        public async Task ConnectToWebWallet(string webWalletAddress)
+        {
+            WalletProvider = new WebWalletProvider(JsRuntime);
+            try
+            {
+                _authToken = await _nativeAuthService.GenerateToken();
+
+                _localStorage.SetItemAsString(WEB_WALLET_ADDRESS, webWalletAddress);
+                await WalletProvider.Init(webWalletAddress);
+                await WalletProvider.Login(_authToken);
+            }
+            catch { }
         }
 
         public async Task ConnectToWebView(string accessToken)
