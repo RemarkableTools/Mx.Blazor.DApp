@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Mx.Blazor.DApp.Client.Application.ExtensionMethods;
 using static Mx.Blazor.DApp.Client.Application.Constants.DAppConstants;
+using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.NET.SDK.NativeAuthClient;
 using Mx.NET.SDK.NativeAuthClient.Entities;
 
@@ -16,6 +17,7 @@ namespace Mx.Blazor.DApp.Client.Services
             _nativeAuthClient = new(new NativeAuthClientConfig()
             {
                 Origin = _navigationManager.BaseUri.GetHost(),
+                ApiUrl = Provider.NetworkConfiguration.APIUri.AbsoluteUri,
                 ExpirySeconds = NATIVE_AUTH_TTL,
                 BlockHashShard = 2
             });

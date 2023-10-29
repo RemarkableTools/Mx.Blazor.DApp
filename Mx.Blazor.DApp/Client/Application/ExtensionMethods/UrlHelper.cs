@@ -77,7 +77,7 @@ namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
                         Sender = args[$"sender[{i}]"],
                         GasPrice = long.Parse(args[$"gasPrice[{i}]"]),
                         GasLimit = long.Parse(args[$"gasLimit[{i}]"]),
-                        Data = Convert.ToBase64String(Encoding.UTF8.GetBytes(args[$"data[{i}]"])),
+                        Data = IsBase64String(args[$"data[{i}]"]) ? args[$"data[{i}]"] : DataCoder.EncodeData(args[$"data[{i}]"]),
                         ChainID = args[$"chainId[{i}]"],
                         Version = int.Parse(args[$"version[{i}]"]),
                         Options = args[$"options[{i}]"] is null ? null : int.Parse(args[$"options[{i}]"]),
@@ -92,6 +92,12 @@ namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
             {
                 return "canceled";
             }
+        }
+
+        private static bool IsBase64String(string base64)
+        {
+            Span<byte> buffer = new Span<byte>(new byte[base64.Length]);
+            return Convert.TryFromBase64String(base64, buffer, out int bytesParsed);
         }
     }
 }
