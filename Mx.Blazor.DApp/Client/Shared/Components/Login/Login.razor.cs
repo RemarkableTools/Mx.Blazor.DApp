@@ -1,7 +1,5 @@
 ﻿using Microsoft.JSInterop;
-using Mx.NET.SDK.Configuration;
 using static Mx.Blazor.DApp.Client.Application.Constants.BrowserSessionStorage;
-using static Mx.Blazor.DApp.Client.Application.Constants.BrowserLocalStorage;
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 
 namespace Mx.Blazor.DApp.Client.Shared.Components.Login
