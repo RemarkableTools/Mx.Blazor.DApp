@@ -1,7 +1,6 @@
 ﻿using Mx.Blazor.DApp.Shared.Connection;
 using Mx.NET.SDK.Core.Domain.Helper;
 using Mx.NET.SDK.Provider.Dtos.Common.Transactions;
-using System.Text;
 using System.Web;
 
 namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
@@ -10,7 +9,8 @@ namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
     {
         public static string GetHost(this string urlString)
         {
-            return new Uri(urlString).Host;
+            var uri = new Uri(urlString);
+            return $"{uri.Scheme}{Uri.SchemeDelimiter}{uri.Host}";
         }
 
         public static string GetUrlWithoutParameters(this string urlString)
