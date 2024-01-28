@@ -5,6 +5,7 @@
     box-shadow: 0 1px 6px 0 var(--c-shadow);
     border-radius: 0.25rem;
     padding: .5rem 1rem;
+    width: auto;
 }
 
 .dismiss {
@@ -13,6 +14,10 @@
     right: 0;
     cursor: pointer;
     margin-right: .5rem;
+}
+
+.text {
+    margin-right: 26px;
 }
 
 .bi-exclamation-diamond-fill {
