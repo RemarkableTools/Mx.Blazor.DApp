@@ -2,8 +2,7 @@
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using static Mx.Blazor.DApp.Client.Application.Constants.DAppConstants;
 using Mx.Blazor.DApp.Client.Models;
-using Mx.NET.SDK.Domain.Data.Transactions;
-using Mx.NET.SDK.Domain.Exceptions;
+using Mx.NET.SDK.Provider.Dtos.API.Transactions;
 
 namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
 {
@@ -25,52 +24,36 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
             CancellationToken cancellationToken = SyncToken.Token;
             await Task.Factory.StartNew(async () =>
             {
-                var allExecuted = true;
-                for (int i = 0; i < TransactionModel.Transactions.Count; i++)
-                {
-                    if (TransactionModel.Transactions[i].Status != "pending")
-                        continue;
+                if (!TransactionModel.Transactions.Any(t => t.Status == "pending")) // this is called only on page refresh
+                    goto ALLEXECUTED;
 
-                    allExecuted = false;
-                    try
-                    {
-                        var transaction = Transaction.From(TransactionModel.Transactions[i].Hash);
-                        await transaction.AwaitExecuted(Provider, TxCheckTime);
-                        TransactionModel.Transactions[i].Status = transaction.Status;
-                    }
-                    catch (TransactionException.TransactionStatusNotReachedException)
-                    {
-                        TransactionModel.Transactions[i].Status = "fail";
-                    }
-                    catch (TransactionException.TransactionWithSmartContractErrorException)
-                    {
-                        TransactionModel.Transactions[i].Status = "fail";
-                    }
-                    catch (TransactionException.FailedTransactionException)
-                    {
-                        TransactionModel.Transactions[i].Status = "fail";
-                    }
-                    catch (TransactionException.InvalidTransactionException)
-                    {
-                        TransactionModel.Transactions[i].Status = "invalid";
-                    }
-                    catch (Exception)
-                    {
-                        TransactionModel.Transactions[i].Status = "exception";
-                    }
-                    finally
-                    {
-                        StateHasChanged();
-                        await Update.InvokeAsync(TransactionModel);
-                    }
+                await Task.Delay(TxCheckTime); // delay before checking the transactions statuses
+
+            GETTXS:
+                var apiTransactions = await GetTransactions(); // get the transactions from API
+                for (int i = 0; i < TransactionModel.Transactions.Count; i++) // set the status for all transactions in the model
+                {
+                    var transactionData = TransactionModel.Transactions[i];
+                    var apiTransaction = apiTransactions.Where(t => t.TxHash == transactionData.Hash).SingleOrDefault();
+                    if (apiTransaction != null)
+                        transactionData.Status = apiTransaction.Status;
+                    else
+                        transactionData.Status = "invalid";
                 }
 
-                if (!allExecuted)
+                StateHasChanged(); // update UI for transactions in the model
+                await Update.InvokeAsync(TransactionModel); // update stored transaction model
+
+                if (TransactionModel.Transactions.Any(t => t.Status == "pending")) // there are still transactions pending
                 {
-                    TransactionsContainer.TransactionsExecuted(TransactionModel.Transactions.Select(t => t.Hash).ToArray());
-                    StateHasChanged();
+                    await Task.Delay(TxCheckTime);
+                    goto GETTXS;
                 }
 
+                TransactionsContainer.TransactionsExecuted(TransactionModel.Transactions.Select(t => t.Hash).ToArray());
+                StateHasChanged();
+
+            ALLEXECUTED:
                 if (TX_DISMISS_TIME > 0)
                 {
                     if (TransactionModel.Transactions.Find(tx => tx.Status != "success") == null)
@@ -80,6 +63,14 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Transactions
                     }
                 }
             }, cancellationToken);
+        }
+        private async Task<TransactionDto[]> GetTransactions()
+        {
+            var @params = new Dictionary<string, string>
+            {
+                { "hashes", string.Join(",", TransactionModel.Transactions.Select(t => t.Hash).ToArray()) }
+            };
+            return await Provider.GetTransactions(100, 0, @params);
         }
 
         private async Task CopyToClipboard(string text)

@@ -49,52 +49,54 @@
         <i class="dismiss bi bi-x fs-4 fw-bold" title="dismiss" @onclick="() =>{SyncToken.Cancel(); Dismiss.InvokeAsync(TransactionModel); }"></i>
     </div>
 
-    <div class="my-2 mx-1">
-        @foreach (var tx in TransactionModel.Transactions)
-        {
-            var explorerLink = $"{MultiversxNetwork.Provider.NetworkConfiguration.ExplorerUri}transactions/{tx.Hash}";
+    <div class="overflow-x-hidden">
+        <div class="hashes-panel my-2 mx-1">
+            @foreach (var tx in TransactionModel.Transactions)
+            {
+                var explorerLink = $"{MultiversxNetwork.Provider.NetworkConfiguration.ExplorerUri}transactions/{tx.Hash}";
 
-            <div class="d-flex align-items-center">
-                @if (tx.Status == "pending")
-                {
-                    <div class="tx-icon">
-                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                <div class="d-flex align-items-center">
+                    @if (tx.Status == "pending")
+                    {
+                        <div class="tx-icon">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                    }
+                    else if (tx.Status == "success")
+                    {
+                        <div class="d-flex justify-content-center align-items-center tx-icon">
+                            <i class="bi bi-check" title="sucess"></i>
+                        </div>
+                    }
+                    else if (tx.Status == "fail")
+                    {
+                        <div class="d-flex justify-content-center align-items-center tx-icon">
+                            <i class="bi bi-x" title="failed"></i>
+                        </div>
+                    }
+                    else if (tx.Status == "exception")
+                    {
+                        <div class="d-flex justify-content-center align-items-center tx-icon">
+                            <i class="bi bi-question" title="exception"></i>
+                        </div>
+                    }
+                    else //invalid
+                    {
+                        <div class="d-flex justify-content-center align-items-center tx-icon">
+                            <i class="bi bi-x-circle" title="invalid"></i>
+                        </div>
+                    }
+                    <div class="font-monospace text-decoration-none ms-1">@tx.Hash[..11]</div>
+                    <div class="fw-bold fs-8 dots">...</div>
+                    <div class="font-monospace">@tx.Hash[..11]</div>
+                    <div class="d-flex justify-content-center align-items-center tx-icon c-default-link ms-2" @onclick="() => CopyToClipboard(tx.Hash)">
+                        <i class="bi bi-clipboard-check" title="copy"></i>
                     </div>
-                }
-                else if (tx.Status == "success")
-                {
-                    <div class="d-flex justify-content-center align-items-center tx-icon">
-                        <i class="bi bi-check" title="sucess"></i>
+                    <div class="d-flex justify-content-center align-items-center tx-icon ms-1">
+                        <a class="bi bi-search c-default-link" title="show in explorer" href="@explorerLink" target="_blank"></a>
                     </div>
-                }
-                else if (tx.Status == "fail")
-                {
-                    <div class="d-flex justify-content-center align-items-center tx-icon">
-                        <i class="bi bi-x" title="failed"></i>
-                    </div>
-                }
-                else if (tx.Status == "exception")
-                {
-                    <div class="d-flex justify-content-center align-items-center tx-icon">
-                        <i class="bi bi-question" title="exception"></i>
-                    </div>
-                }
-                else //invalid
-                {
-                    <div class="d-flex justify-content-center align-items-center tx-icon">
-                        <i class="bi bi-x-circle" title="invalid"></i>
-                    </div>
-                }
-                <div class="font-monospace text-decoration-none ms-1">@tx.Hash[..11]</div>
-                <div class="fw-bold fs-9 dots">...</div>
-                <div class="font-monospace">@tx.Hash[..11]</div>
-                <div class="d-flex justify-content-center align-items-center tx-icon c-default-link ms-2" @onclick="() => CopyToClipboard(tx.Hash)">
-                    <i class="bi bi-clipboard-check" title="copy"></i>
                 </div>
-                <div class="d-flex justify-content-center align-items-center tx-icon ms-2">
-                    <a class="bi bi-search" title="show in explorer" href="@explorerLink" target="_blank"></a>
-                </div>
-            </div>
-        }
+            }
+        </div>
     </div>
 </div>

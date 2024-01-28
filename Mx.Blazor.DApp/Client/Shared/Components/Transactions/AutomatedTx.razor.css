@@ -39,6 +39,10 @@
         color: var(--bs-gray-600);
     }
 
+.hashes-panel {
+    max-height: 130px;
+}
+
 .bi-clipboard-check, .bi-search {
     cursor: pointer;
     font-size: .8rem;
