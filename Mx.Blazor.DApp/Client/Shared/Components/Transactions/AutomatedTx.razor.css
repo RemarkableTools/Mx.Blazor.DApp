@@ -8,9 +8,10 @@
 .title {
     font-weight: 600;
     height: fit-content;
-    margin: auto;
     width: 100%;
     max-width: 221px;
+    margin: auto;
+    padding: 0 .25rem;
 }
 
 .icon {
