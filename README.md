@@ -2,10 +2,10 @@
 ### `RemarkableTools Blazor DApp` is a template application built using [Blazor UI framework](https://blazor.net) and ASP.NET Core server application.
 <br>
 
-This project is a client-side `Blazor WebAssembly App`
-* using `.NET 6.0`
+This project is a client-side `Blazor Web App`
+* using `.NET 8.0`
+* render mode `Interactive WebAssembly`
 * `ASP.NET Core hosted` - server application
-* `Progressing Web Application` - supports installation
 <br>
 
 _* This means that you can build your web application using C#, HTML/CSS, but you can also use JavaScript or integrate official npm packages developed by MultiversX team._
