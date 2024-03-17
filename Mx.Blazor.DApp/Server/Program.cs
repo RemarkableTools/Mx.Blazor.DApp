@@ -2,12 +2,22 @@ using Mx.Blazor.DApp.Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Serilog;
+using Mx.Blazor.DApp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages().AddNewtonsoftJson();
+builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
+
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 builder.Services.AddScoped<IConnectionService, ConnectionService>();
 builder.Services.AddAuthentication(options =>
@@ -50,8 +60,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseAntiforgery();
+
 app.MapRazorPages();
 app.MapControllers();
-app.MapFallbackToFile("index.html");
+app.MapRazorComponents<App>()
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddAdditionalAssemblies(typeof(Mx.Blazor.DApp.Client._Imports).Assembly);
 
 app.Run();

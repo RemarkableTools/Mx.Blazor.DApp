@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33110.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mx.Blazor.DApp.Server", "Mx.Blazor.DApp\Server\Mx.Blazor.DApp.Server.csproj", "{58AFEC62-A7B4-46E4-85B2-1040BAD87A55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mx.Blazor.DApp", "Mx.Blazor.DApp\Server\Mx.Blazor.DApp.csproj", "{58AFEC62-A7B4-46E4-85B2-1040BAD87A55}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mx.Blazor.DApp.Client", "Mx.Blazor.DApp\Client\Mx.Blazor.DApp.Client.csproj", "{3681381B-D007-4FBA-AE0E-D14130D64610}"
 EndProject
