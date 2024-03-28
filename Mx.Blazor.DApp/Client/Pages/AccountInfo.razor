@@ -35,7 +35,7 @@
                         <h4 class="mb-2">Account tokens:</h4>
                         @foreach (var token in AccountContainer.AccountTokens)
                         {
-                            <span class="m-1 ms-3">@token.Name @token.Balance.ToCurrencyString(4)</span>
+                            <span class="m-1 ms-3">@token.Name: @token.Balance.ToDenominated(4) @token.Identifier</span>
                         }
                     </div>
                 }
@@ -46,9 +46,29 @@
                     <input class="mb-2" type="text" @bind="@Receiver" />
                     <span class="fw-bold my-2">EGLD:</span>
                     <input type="text mb-2" @bind="@EGLDAmount" />
-                    <span class="fw-bold my-2">Message:</span>
+                    <span class="fw-bold my-2">Message (optional):</span>
                     <input type="text mb-2" @bind="@Message" />
                     <button class="btn btn-primary mx-auto mt-4" @onclick="SignTransaction">Test send transaction</button>
+                </div>
+
+                <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
+                    <h4 class="mb-3">Send Token:</h4>
+                    <span class="fw-bold my-2">Receiver:</span>
+                    <input class="mb-2" type="text" @bind="@ReceiverToken" />
+                    <span class="fw-bold my-2">Token Identifier:</span>
+                    <input type="text mb-2" @bind="@TokenIdentifier" placeholder="e.g. TOKEN-123456" />
+                    <span class="fw-bold my-2">Amount:</span>
+                    <input type="text mb-2" @bind="@TokenAmount" placeholder="e.g. 10.5" />
+                    <button class="btn btn-primary mx-auto mt-4" @onclick="SignTokenTransaction">Test send token transaction</button>
+                </div>
+
+                <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
+                    <h4 class="mb-3">Send Multiple NFT:</h4>
+                    <span class="fw-bold my-2">Receiver:</span>
+                    <input class="mb-2" type="text" @bind="@ReceiverNft" />
+                    <span class="fw-bold my-2">NFTs Identifier:</span>
+                    <input type="text mb-2" @bind="@NftsIdentifier" placeholder="e.g. NFT-123456-01" />
+                    <button class="btn btn-primary mx-auto mt-4" @onclick="SignNftTransaction">Test send NFT transaction</button>
                 </div>
             }
         </div>
