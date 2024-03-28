@@ -9,3 +9,23 @@
     border-radius: .25rem;
     box-shadow: 0 1px 6px 0 var(--c-shadow);
 }
+
+input::-webkit-input-placeholder {
+    font-style: italic;
+    font-size: .9rem;
+}
+
+:-moz-placeholder {
+    font-style: italic;
+    font-size: .9rem;
+}
+
+::-moz-placeholder {
+    font-style: italic;
+    font-size: .9rem;
+}
+
+:-ms-input-placeholder {
+    font-style: italic;
+    font-size: .9rem;
+}
