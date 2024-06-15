@@ -156,7 +156,7 @@ async function openModal(uri) {
 
     $("#WalletConnectQRContainer").html(svg);
     $("#WalletConnectQRModal").modal("show");
-    document.getElementById("WalletConnectUri").value = "https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link=https://maiar.com/?wallet-connect=" + encodeURIComponent(uri);
+    document.getElementById("WalletConnectUri").value = "https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link=https://xportal.com/?wallet-connect=" + encodeURIComponent(uri);
     document.getElementById("WalletConnectUri").dispatchEvent(new Event('change'));
 }
 
