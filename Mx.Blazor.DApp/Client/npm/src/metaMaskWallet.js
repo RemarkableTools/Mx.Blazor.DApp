@@ -1,5 +1,4 @@
-﻿import QRCode from "qrcode";
-import { WalletConnectV2Provider } from "@multiversx/sdk-wallet-connect-provider";
+﻿import { MetamaskProxyProvider } from "@multiversx/sdk-metamask-proxy-provider";
 import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
     showConnectionError,
@@ -11,13 +10,15 @@ import {
     cancelTxToast
 } from "./common";
 
-const relayUrl = "wss://relay.walletconnect.com";
-const projectId = "17e2b91ffd21870bd04d7295e26453ad";
+class MetaMaskWallet {
 
-class XPortal {
-    async init(chainId) {
-        this.provider = new WalletConnectV2Provider(this.prepareCallbacks(), chainId, relayUrl, projectId);
+    async init(walletURL, address) {
+        this.provider = MetamaskProxyProvider.getInstance();
+        this.provider.setWalletUrl(walletURL);
         var initialized = await this.provider.init();
+        if (address)
+            this.provider = this.provider.setAddress(address);
+
         if (!initialized)
             showConnectionError();
         else
@@ -26,31 +27,18 @@ class XPortal {
         return initialized;
     }
 
-    prepareCallbacks() {
-        const self = this;
-
-        return {
-            onClientLogin: async () => {
-                closeModal();
-                localStorage.setItem("wallettype", "2");
-                DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'XPortalClientConnect', JSON.stringify({ address: self.provider.address, signature: self.provider.signature }));
-            },
-            onClientLogout: async () => {
-                DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'XPortalClientDisconnect');
-            },
-            onClientEvent: (event) => {
-                console.log('wc2 session event: ', event);
-            }
-        };
-    }
-
     async login(authToken) {
-        const { uri, approval } = await this.provider.connect({
-            methods: ["mvx_signNativeAuthToken", "mvx_cancelAction"],
-        });
+        await this.provider.login({ token: authToken });
 
-        await openModal(uri + "&token=" + authToken);
-        await this.provider.login({ approval: approval, token: authToken });
+        if (this.provider.account.signature) {
+            $("#WalletConnectionsModal").modal("hide");
+            localStorage.setItem("wallettype", "7");
+        }
+
+        return JSON.stringify({
+            address: this.provider.account.address,
+            signature: this.provider.account.signature
+        });
     }
 
     async getAddress() {
@@ -70,7 +58,7 @@ class XPortal {
     }
 
     async signMessage(message) {
-        signingMessageModal("xPortal");
+        signingMessageModal("MetaMask Wallet");
 
         const signableMessage = new SignableMessage({
             message: Buffer.from(message)
@@ -89,7 +77,7 @@ class XPortal {
     }
 
     async signTransaction(transactionRequest) {
-        signingModal("xPortal");
+        signingModal("MetaMask Wallet");
 
         const transaction = new Transaction({
             nonce: transactionRequest.nonce,
@@ -118,7 +106,7 @@ class XPortal {
     }
 
     async signTransactions(transactionsRequest) {
-        signingModal("xPortal");
+        signingModal("MetaMask Wallet");
 
         const transactions = transactionsRequest.map(transactionRequest =>
             new Transaction({
@@ -147,20 +135,10 @@ class XPortal {
             signingModalClose();
         }
     }
+
+    cancelAction() {
+        this.provider.cancelAction();
+    }
 }
 
-export const Obj = new XPortal();
-
-async function openModal(uri) {
-    const svg = await QRCode.toString(uri, { type: "svg" });
-
-    $("#WalletConnectQRContainer").html(svg);
-    $("#WalletConnectQRModal").modal("show");
-    document.getElementById("WalletConnectUri").value = "https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link=https://xportal.com/?wallet-connect=" + encodeURIComponent(uri);
-    document.getElementById("WalletConnectUri").dispatchEvent(new Event('change'));
-}
-
-function closeModal() {
-    $("#WalletConnectionsModal").modal("hide");
-    $("#WalletConnectQRModal").modal("hide");
-}
+export const Obj = new MetaMaskWallet();

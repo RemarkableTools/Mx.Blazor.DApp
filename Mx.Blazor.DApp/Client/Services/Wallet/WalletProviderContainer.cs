@@ -117,7 +117,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             _localStorage.RemoveItem(ACCOUNT_TOKEN);
             _localStorage.RemoveItem(WALLET_TYPE);
             _localStorage.RemoveItem(WEB_WALLET_STATE);
-            _localStorage.RemoveItem(WEB_WALLET_ADDRESS);
+            _localStorage.RemoveItem(WEB_WALLET_URL);
             _localStorage.RemoveAllWcItems();
 
             OnWalletDisconnected?.Invoke();
@@ -143,6 +143,12 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                     break;
                 case WalletType.WebView:
                     WalletProvider = new WebViewProvider(JsRuntime);
+                    break;
+                case WalletType.CrossWindow:
+                    WalletProvider = new CrossWindowWalletProvider(JsRuntime);
+                    break;
+                case WalletType.MetaMask:
+                    WalletProvider = new MetaMaskWalletProvider(JsRuntime);
                     break;
                 default:
                     _localStorage.RemoveItem(ACCESS_TOKEN);
@@ -185,10 +191,16 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                     await WalletProvider.Init();
                     break;
                 case WalletType.Web:
-                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_ADDRESS));
+                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL));
                     await WebWalletCheckingState();
                     break;
                 case WalletType.WebView:
+                    break;
+                case WalletType.CrossWindow:
+                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
+                    break;
+                case WalletType.MetaMask:
+                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
                     break;
             }
 
@@ -241,7 +253,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             {
                 _authToken = await _nativeAuthService.GenerateToken();
 
-                _localStorage.SetItemAsString(WEB_WALLET_ADDRESS, webWalletAddress);
+                _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
                 await WalletProvider.Init(webWalletAddress);
                 await WalletProvider.Login(_authToken);
             }
@@ -261,6 +273,39 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             };
             NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
             await ValidateWalletConnection(accountToken);
+        }
+
+        public async Task ConnectToCrossWindowWallet(string webWalletAddress)
+        {
+            WalletProvider = new CrossWindowWalletProvider(JsRuntime);
+            try
+            {
+                _authToken = await _nativeAuthService.GenerateToken();
+
+                _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
+                await WalletProvider.Init(webWalletAddress);
+                var accountInfo = await WalletProvider.Login(_authToken);
+                await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+            }
+            catch { }
+        }
+
+        public async Task ConnectToMetaMaskWallet(string webWalletAddress)
+        {
+            WalletProvider = new MetaMaskWalletProvider(JsRuntime);
+            try
+            {
+                _authToken = await _nativeAuthService.GenerateToken();
+
+                _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
+                await WalletProvider.Init(webWalletAddress);
+                var accountInfo = await WalletProvider.Login(_authToken);
+                await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public bool IsConnected()
@@ -297,7 +342,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
             if (signedMessage == "canceled")
             {
-                return false;
+                return null;
             }
 
             var messageSignature = JsonWrapper.Deserialize<MessageSignature>(signedMessage);

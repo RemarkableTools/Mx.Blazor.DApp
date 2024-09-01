@@ -116,5 +116,55 @@ module.exports = [
         },
         name: "WebView",
         entry: "./src/webView.js"
+    },
+    {
+        module: {
+            rules: [
+                {
+                    test: /\.(js|jsx)$/,
+                    exclude: /node_modules/,
+                    use: {
+                        loader: "babel-loader"
+                    }
+                }
+            ]
+        },
+        plugins: [
+            new webpack.ProvidePlugin({
+                Buffer: ['buffer', 'Buffer'],
+            })
+        ],
+        output: {
+            path: path.resolve(__dirname, '../wwwroot/js/npm'),
+            filename: "crossWindowWallet.js",
+            library: "CrossWindowWallet"
+        },
+        name: "CrossWindowWallet",
+        entry: "./src/crossWindowWallet.js"
+    },
+    {
+        module: {
+            rules: [
+                {
+                    test: /\.(js|jsx)$/,
+                    exclude: /node_modules/,
+                    use: {
+                        loader: "babel-loader"
+                    }
+                }
+            ]
+        },
+        plugins: [
+            new webpack.ProvidePlugin({
+                Buffer: ['buffer', 'Buffer'],
+            })
+        ],
+        output: {
+            path: path.resolve(__dirname, '../wwwroot/js/npm'),
+            filename: "metaMaskWallet.js",
+            library: "MetaMaskWallet"
+        },
+        name: "MetaMaskWallet",
+        entry: "./src/metaMaskWallet.js"
     }
 ];
