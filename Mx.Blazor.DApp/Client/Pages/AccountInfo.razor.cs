@@ -64,10 +64,10 @@ namespace Mx.Blazor.DApp.Client.Pages
 
             var signMessage = await WalletProvider.SignMessage(new SignableMessage() { Message = SignableMessageText });
 
-            if (signMessage == true)
+            if (signMessage == null)
+                await JsRuntime.InvokeVoidAsync("alert", "Signing message operation cancelled.");
+            else  if (signMessage == true)
                 await JsRuntime.InvokeVoidAsync("alert", "Message was successfully signed.");
-            else if (signMessage == false)
-                await JsRuntime.InvokeVoidAsync("alert", "Message signature is invalid.");
         }
 
         public async void SignTransaction()

@@ -50,7 +50,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
 
         public async void WebWalletLogin()
         {
-            await WalletProvider.ConnectToWebWallet(Provider.NetworkConfiguration.WebWalletUri.AbsoluteUri);
+            await WalletProvider.ConnectToCrossWindowWallet(Provider.NetworkConfiguration.WebWalletUri.AbsoluteUri);
         }
 
         public async void XAliasWalletLogin()
