@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using Mx.NET.SDK.Configuration;
 using static Mx.Blazor.DApp.Client.Application.Constants.BrowserSessionStorage;
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 
@@ -56,6 +57,24 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
         public async void XAliasWalletLogin()
         {
             await WalletProvider.ConnectToWebWallet(Provider.NetworkConfiguration.XAliasWalletUri.AbsoluteUri);
+        }
+
+        public async void MetaMaskWalletLogin()
+        {
+            var walletUrl = MvxNetwork switch
+            {
+                Network.MainNet => "https://snap-wallet.multiversx.com",
+                Network.DevNet => "https://devnet-snap-wallet.multiversx.com",
+                _ => string.Empty
+            };
+
+            if (walletUrl == string.Empty)
+            {
+                await JsRuntime.InvokeVoidAsync("alert", "Network is not supported");
+                return;
+            }
+
+            await WalletProvider.ConnectToMetaMaskWallet(walletUrl);
         }
 
         private void SetLedgerState(LedgerStates state)

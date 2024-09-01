@@ -38,7 +38,8 @@
         Hardware,
         Web,
         WebView,
-        CrossWindow
+        CrossWindow,
+        MetaMask
     }
 
     public enum WebWalletState

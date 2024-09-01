@@ -147,6 +147,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 case WalletType.CrossWindow:
                     WalletProvider = new CrossWindowWalletProvider(JsRuntime);
                     break;
+                case WalletType.MetaMask:
+                    WalletProvider = new MetaMaskWalletProvider(JsRuntime);
+                    break;
                 default:
                     _localStorage.RemoveItem(ACCESS_TOKEN);
                     _localStorage.RemoveItem(ACCESS_TOKEN_EXPIRES);
@@ -194,6 +197,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 case WalletType.WebView:
                     break;
                 case WalletType.CrossWindow:
+                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
+                    break;
+                case WalletType.MetaMask:
                     await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
                     break;
             }
@@ -282,6 +288,24 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
             }
             catch { }
+        }
+
+        public async Task ConnectToMetaMaskWallet(string webWalletAddress)
+        {
+            WalletProvider = new MetaMaskWalletProvider(JsRuntime);
+            try
+            {
+                _authToken = await _nativeAuthService.GenerateToken();
+
+                _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
+                await WalletProvider.Init(webWalletAddress);
+                var accountInfo = await WalletProvider.Login(_authToken);
+                await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         public bool IsConnected()

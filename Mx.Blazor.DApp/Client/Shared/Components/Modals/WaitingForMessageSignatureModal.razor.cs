@@ -16,11 +16,11 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Modals
 
         private void SetCancelButton()
         {
-            if (LocalStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Extension ||
-                LocalStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.CrossWindow)
-                CanCancel = true;
-            else
-                CanCancel = false;
+            CanCancel = LocalStorage.GetItem<WalletType>(WALLET_TYPE) switch
+            {
+                WalletType.Extension or WalletType.CrossWindow or WalletType.MetaMask => true,
+                _ => false,
+            };
             StateHasChanged();
         }
 
