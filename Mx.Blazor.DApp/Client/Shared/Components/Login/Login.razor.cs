@@ -61,20 +61,13 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
 
         public async void MetaMaskWalletLogin()
         {
-            var walletUrl = MvxNetwork switch
-            {
-                Network.MainNet => "https://snap-wallet.multiversx.com",
-                Network.DevNet => "https://devnet-snap-wallet.multiversx.com",
-                _ => string.Empty
-            };
-
-            if (walletUrl == string.Empty)
+            if (MetaMaskSnapWalletUrl == string.Empty)
             {
                 await JsRuntime.InvokeVoidAsync("alert", "Network is not supported");
                 return;
             }
 
-            await WalletProvider.ConnectToMetaMaskWallet(walletUrl);
+            await WalletProvider.ConnectToMetaMaskWallet(MetaMaskSnapWalletUrl);
         }
 
         private void SetLedgerState(LedgerStates state)
