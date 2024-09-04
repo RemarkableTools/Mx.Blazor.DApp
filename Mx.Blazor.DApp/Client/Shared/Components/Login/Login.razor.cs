@@ -18,6 +18,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
 
         private bool isMobile = false;
         private bool extensionWalletAvailable = false;
+        private bool metaMaskWalletAvailable = false;
 
         private string WalletConnectUri = "";
 
@@ -32,6 +33,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
         {
             isMobile = SessionStorage.GetItem<bool>(MOBILE_DEVICE);
             extensionWalletAvailable = SessionStorage.GetItem<bool>(EXTENSION_AVAILABLE);
+            metaMaskWalletAvailable = SessionStorage.GetItem<bool>(METAMASK_AVAILABLE);
         }
 
         public async void ExtensionWalletLogin()

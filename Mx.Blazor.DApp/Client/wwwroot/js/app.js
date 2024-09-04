@@ -8,6 +8,11 @@ function isExtension() {
     return !!window.elrondWallet;
 }
 
+sessionStorage.setItem("metaMaskAvailable", isMetaMask());
+function isMetaMask() {
+    return !!window.ethereum;
+}
+
 function getAccessToken() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);

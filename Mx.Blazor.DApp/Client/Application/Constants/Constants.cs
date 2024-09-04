@@ -29,6 +29,7 @@
         public const string TX_LIST = "txs";
         public const string MOBILE_DEVICE = "mobiledevice";
         public const string EXTENSION_AVAILABLE = "extensionAvailable";
+        public const string METAMASK_AVAILABLE = "metaMaskAvailable";
     }
 
     public enum WalletType
