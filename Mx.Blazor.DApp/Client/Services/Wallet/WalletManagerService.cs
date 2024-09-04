@@ -17,8 +17,6 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             _walletProvider = walletProvider;
             JsRuntime = jsRuntime;
             _accountContainer = accountContainer;
-
-            OnLogout += LogoutFromWallet;
         }
 
         private static event Action? OnDisconnectByInactivity;
@@ -34,6 +32,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             OnLogout += LogoutFromWallet;
             await JsRuntime.InvokeVoidAsync("initInactivityTimer", INACTIVITY_TIMER);
         }
+
         public async void DisconnectEvent()
         {
             await Disconnect();
