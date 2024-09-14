@@ -1,4 +1,4 @@
-﻿import { MetamaskProxyProvider } from "@multiversx/sdk-metamask-proxy-provider";
+﻿import { MetamaskProvider } from "@multiversx/sdk-metamask-provider";
 import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
     showConnectionError,
@@ -12,9 +12,8 @@ import {
 
 class MetaMaskWallet {
 
-    async init(walletURL, address) {
-        this.provider = MetamaskProxyProvider.getInstance();
-        this.provider.setWalletUrl(walletURL);
+    async init(address) {
+        this.provider = MetamaskProvider.getInstance();
         var initialized = await this.provider.init();
         if (address)
             this.provider = this.provider.setAddress(address);

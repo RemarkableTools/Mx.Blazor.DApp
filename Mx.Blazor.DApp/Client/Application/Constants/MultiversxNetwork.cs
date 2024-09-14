@@ -28,18 +28,5 @@ namespace Mx.Blazor.DApp.Client.Application.Constants
         {
             NetworkConfig ??= await NetworkConfig.GetFromNetwork(Provider);
         }
-        public static string MetaMaskSnapWalletUrl
-        {
-            get
-            {
-                return MvxNetwork switch
-                {
-                    Network.MainNet => "https://snap-wallet.multiversx.com",
-                    Network.DevNet => "https://devnet-snap-wallet.multiversx.com",
-                    _ => string.Empty
-                };
-            }
-        }
-
     }
 }

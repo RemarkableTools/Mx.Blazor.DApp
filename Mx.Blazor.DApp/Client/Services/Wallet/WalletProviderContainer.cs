@@ -200,7 +200,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                     await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
                     break;
                 case WalletType.MetaMask:
-                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
+                    await WalletProvider.Init(GetAddress());
                     break;
             }
 
@@ -290,15 +290,14 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             catch { }
         }
 
-        public async Task ConnectToMetaMaskWallet(string webWalletAddress)
+        public async Task ConnectToMetaMaskWallet()
         {
             WalletProvider = new MetaMaskWalletProvider(JsRuntime);
             try
             {
                 _authToken = await _nativeAuthService.GenerateToken();
 
-                _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
-                await WalletProvider.Init(webWalletAddress);
+                await WalletProvider.Init();
                 var accountInfo = await WalletProvider.Login(_authToken);
                 await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
             }
