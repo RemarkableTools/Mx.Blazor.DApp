@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using Mx.Blazor.DApp.Client.Application.Exceptions;
 using Mx.Blazor.DApp.Client.Application.ExtensionMethods;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
 using Mx.NET.SDK.Domain;
@@ -13,9 +14,11 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
             JsRuntime = jsRuntime;
         }
 
-        public Task Init(params string[] args)
+        public async Task Init(params string[] args)
         {
-            return Task.CompletedTask;
+            var initialized = await JsRuntime.InvokeAsync<bool>("WebView.Obj.init", args);
+            if (!initialized)
+                throw new InitException();
         }
 
         public async Task<string> Login(string authToken)

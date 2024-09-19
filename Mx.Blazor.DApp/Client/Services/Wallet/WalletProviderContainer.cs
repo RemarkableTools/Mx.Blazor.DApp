@@ -272,6 +272,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 Signature = parts[2]
             };
             NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
+            await WalletProvider.Init();
             await ValidateWalletConnection(accountToken);
         }
 
