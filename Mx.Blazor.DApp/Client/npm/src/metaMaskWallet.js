@@ -1,6 +1,7 @@
-﻿import { MetamaskProxyProvider } from "@multiversx/sdk-metamask-proxy-provider";
+﻿import { IframeProvider } from "@multiversx/sdk-web-wallet-iframe-provider";
 import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
+    IframeLoginTypes,
     showConnectionError,
     hideConnectionError,
     signingMessageModal,
@@ -13,7 +14,8 @@ import {
 class MetaMaskWallet {
 
     async init(walletURL, address) {
-        this.provider = MetamaskProxyProvider.getInstance();
+        this.provider = IframeProvider.getInstance();
+        this.provider.setLoginType(IframeLoginTypes.metamask);
         this.provider.setWalletUrl(walletURL);
         var initialized = await this.provider.init();
         if (address)

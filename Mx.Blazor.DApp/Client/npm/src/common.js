@@ -1,4 +1,9 @@
-﻿export function showConnectionError() {
+﻿export const IframeLoginTypes = {
+    metamask: 'metamask',
+    passkey: 'passkey'
+}
+
+export function showConnectionError() {
     document.getElementById("WalletConnectionsError").className = "d-block";
     document.getElementById("WalletConnectionsLoginApproval").className = "d-none";
 }
@@ -38,23 +43,4 @@ export function signingModalClose() {
 
 export function cancelTxToast() {
     new bootstrap.Toast(document.getElementById("canceledTransactionToast")).show();
-}
-
-export const isWindowAvailable = () =>
-    typeof window != 'undefined' && typeof window?.location != 'undefined';
-
-export function detectCurrentPlatform() {
-    if (window?.ReactNativeWebView) {
-        return PlatformsEnum.reactNative;
-    }
-    if (window.webkit) {
-        return PlatformsEnum.ios;
-    }
-    return PlatformsEnum.web;
-};
-
-export const PlatformsEnum = {
-    ios: 'ios',
-    reactNative: 'reactNative',
-    web: 'web'
 }
