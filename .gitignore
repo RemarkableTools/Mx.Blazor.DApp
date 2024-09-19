@@ -369,3 +369,4 @@ appsettings.Production.json
 # other
 desktop.ini
 /Mx.Blazor.DApp/Server/.config
+*.bat
