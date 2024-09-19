@@ -303,10 +303,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 var accountInfo = await WalletProvider.Login(_authToken);
                 await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
+            catch { }
         }
 
         public bool IsConnected()
