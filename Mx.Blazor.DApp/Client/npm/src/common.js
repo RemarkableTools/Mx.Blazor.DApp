@@ -1,4 +1,9 @@
-﻿export function showConnectionError() {
+﻿export const IframeLoginTypes = {
+    metamask: 'metamask',
+    passkey: 'passkey'
+}
+
+export function showConnectionError() {
     document.getElementById("WalletConnectionsError").className = "d-block";
     document.getElementById("WalletConnectionsLoginApproval").className = "d-none";
 }
