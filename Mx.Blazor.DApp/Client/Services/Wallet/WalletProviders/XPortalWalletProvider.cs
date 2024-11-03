@@ -5,6 +5,8 @@ using Mx.NET.SDK.Domain;
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 using Mx.NET.SDK.Configuration;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
+using Mx.Blazor.DApp.Shared.Connection;
+using Mx.NET.SDK.Core.Domain;
 
 namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
 {
@@ -35,10 +37,10 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
                 throw new InitException();
         }
 
-        public async Task<string> Login(string authToken)
+        public async Task<AccountToken> Login(string authToken)
         {
             await JsRuntime.InvokeVoidAsync("XPortalWallet.Obj.login", authToken);
-            return "";
+            return new AccountToken();
         }
 
         public async Task<string> GetAddress()

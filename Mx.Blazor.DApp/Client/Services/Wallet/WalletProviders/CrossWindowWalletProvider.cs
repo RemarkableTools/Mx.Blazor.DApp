@@ -3,6 +3,8 @@ using Mx.Blazor.DApp.Client.Application.ExtensionMethods;
 using Microsoft.JSInterop;
 using Mx.NET.SDK.Domain;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
+using Mx.Blazor.DApp.Shared.Connection;
+using Mx.NET.SDK.Core.Domain;
 
 namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
 {
@@ -21,9 +23,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
                 throw new InitException();
         }
 
-        public async Task<string> Login(string authToken)
+        public async Task<AccountToken> Login(string authToken)
         {
-            return await JsRuntime.InvokeAsync<string>("CrossWindowWallet.Obj.login", authToken);
+            return await JsRuntime.InvokeAsync<AccountToken>("CrossWindowWallet.Obj.login", authToken);
         }
 
         public async Task<string> GetAddress()

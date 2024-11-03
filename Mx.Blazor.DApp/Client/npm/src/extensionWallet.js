@@ -1,5 +1,5 @@
 ﻿import { ExtensionProvider } from "@multiversx/sdk-extension-provider";
-import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
+import { Address, Message, Transaction, TransactionPayload } from "@multiversx/sdk-core";
 import {
     showConnectionError,
     hideConnectionError,
@@ -7,7 +7,6 @@ import {
     signingMessageModalClose,
     signingModal,
     signingModalClose,
-    cancelTxToast
 } from "./common";
 
 class ExtensionWallet {
@@ -26,48 +25,38 @@ class ExtensionWallet {
     }
 
     async login(authToken) {
-        await this.provider.login({ token: authToken });
+        let account = await this.provider.login({ token: authToken });
 
-        if (this.provider.account.signature) {
+        if (this.isConnected()) {
             $("#WalletConnectionsModal").modal("hide");
-            localStorage.setItem("wallettype", "1");
+            localStorage.setItem("walletType", "1");
         }
 
-        return JSON.stringify({
-            address: this.provider.account.address,
-            signature: this.provider.account.signature
-        });
+        return account;
     }
 
-    async getAddress() {
-        return await this.provider.getAddress();
-    }
-
-    async isConnected() {
-        return await this.provider.isConnected();
+    isConnected() {
+        return this.provider.isConnected() && this.provider.account.signature;
     }
 
     async logout() {
         await this.provider.logout();
     }
 
-    transactionCanceled() {
-        cancelTxToast();
-    }
-
     async signMessage(message) {
         signingMessageModal("MultiversX DeFi Wallet");
 
-        const signableMessage = new SignableMessage({
-            message: Buffer.from(message)
-        });
-
         try {
-            await this.provider.signMessage(signableMessage);
-            return JSON.stringify(signableMessage.toJSON(), null, 4);
+            let signedMessage = await this.provider.signMessage(
+                new Message({
+                    data: Buffer.from(message)
+                })
+            );
+
+            return signedMessage.signature.toString("hex")
         }
         catch (err) {
-            return "canceled";
+            return null;
         }
         finally {
             signingMessageModalClose();
@@ -96,7 +85,7 @@ class ExtensionWallet {
             return JSON.stringify(signedTransaction.toSendable(), null, 4);
         }
         catch (err) {
-            return "canceled";
+            return null;
         }
         finally {
             signingModalClose();
@@ -127,7 +116,7 @@ class ExtensionWallet {
             return JSON.stringify(signedTransactions.map(transaction => transaction.toSendable()), null, 4);
         }
         catch (err) {
-            return "canceled";
+            return null;
         }
         finally {
             signingModalClose();

@@ -52,17 +52,17 @@ namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
             return args["signature"] ?? string.Empty;
         }
 
-        public static string GetTransactionsFromUrl(this string urlString)
+        public static string? GetTransactionsFromUrl(this string urlString)
         {
             int idx = urlString.IndexOf('?');
             string query = idx >= 0 ? urlString[idx..] : "";
             var args = HttpUtility.ParseQueryString(query);
 
             if (args["status"] == "cancelled" || args.Count == 0)
-                return "canceled";
+                return null;
 
             if (args["status"] != null && args["status"] != "transactionsSigned")
-                return "canceled";
+                return null;
 
             try
             {
@@ -90,7 +90,7 @@ namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
             }
             catch
             {
-                return "canceled";
+                return null;
             }
         }
 

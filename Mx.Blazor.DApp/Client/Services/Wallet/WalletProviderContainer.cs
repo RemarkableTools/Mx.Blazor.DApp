@@ -71,6 +71,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         public static void XPortalClientDisconnect() => OnXPortalClientDisconnected?.Invoke();
 
         private string? _authToken;
+        public string WalletAddress => _localStorage.GetItemAsString(WALLET_ADDRESS) ?? "";
+        public string WalletUrl => _localStorage.GetItemAsString(WEB_WALLET_URL) ?? "";
+
 
         public event Action? OnWalletConnected;
         public event Action? OnWalletDisconnected;
@@ -96,7 +99,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 var connectionToken = await Http.PostAsync<ConnectionToken>($"api/connection/verify", new AccessToken(accessToken));
                 _localStorage.SetItemAsString(ACCESS_TOKEN, connectionToken.AccessToken);
                 _localStorage.SetItem(ACCESS_TOKEN_EXPIRES, DateTime.Now.AddSeconds(NATIVE_AUTH_TTL).ToTimestamp());
-                _localStorage.SetItem(ACCOUNT_TOKEN, connectionToken.AccountToken);
+                _localStorage.SetItemAsString(WALLET_ADDRESS, connectionToken.AccountToken.Address);
 
                 OnWalletConnected?.Invoke();
             }
@@ -114,7 +117,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             accessTokenExpired = false;
             _localStorage.RemoveItem(ACCESS_TOKEN);
             _localStorage.RemoveItem(ACCESS_TOKEN_EXPIRES);
-            _localStorage.RemoveItem(ACCOUNT_TOKEN);
+            _localStorage.RemoveItem(WALLET_ADDRESS);
             _localStorage.RemoveItem(WALLET_TYPE);
             _localStorage.RemoveItem(WEB_WALLET_STATE);
             _localStorage.RemoveItem(WEB_WALLET_URL);
@@ -153,9 +156,10 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 default:
                     _localStorage.RemoveItem(ACCESS_TOKEN);
                     _localStorage.RemoveItem(ACCESS_TOKEN_EXPIRES);
-                    _localStorage.RemoveItem(ACCOUNT_TOKEN);
+                    _localStorage.RemoveItem(WALLET_ADDRESS);
                     _localStorage.RemoveItem(WALLET_TYPE);
                     _localStorage.RemoveItem(WEB_WALLET_STATE);
+                    _localStorage.RemoveItem(WEB_WALLET_URL);
                     _localStorage.RemoveAllWcItems();
                     break;
             }
@@ -182,7 +186,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             switch (_localStorage.GetItem<WalletType>(WALLET_TYPE))
             {
                 case WalletType.Extension:
-                    await WalletProvider.Init(GetAddress());
+                    await WalletProvider.Init(WalletAddress);
                     break;
                 case WalletType.XPortal:
                     await WalletProvider.Init();
@@ -191,16 +195,16 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                     await WalletProvider.Init();
                     break;
                 case WalletType.Web:
-                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL));
+                    await WalletProvider.Init(WalletUrl);
                     await WebWalletCheckingState();
                     break;
                 case WalletType.WebView:
                     break;
                 case WalletType.CrossWindow:
-                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
+                    await WalletProvider.Init(WalletUrl, WalletAddress);
                     break;
                 case WalletType.MetaMask:
-                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
+                    await WalletProvider.Init(WalletUrl, WalletAddress);
                     break;
             }
 
@@ -218,8 +222,8 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 _authToken = await _nativeAuthService.GenerateToken();
 
                 await WalletProvider.Init();
-                var accountInfo = await WalletProvider.Login(_authToken);
-                await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+                var accountToken = await WalletProvider.Login(_authToken);
+                await ValidateWalletConnection(accountToken);
             }
             catch { }
         }
@@ -242,8 +246,10 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             WalletProvider = new HardwareWalletProvider(JsRuntime);
             _authToken = authToken;
             //Init is previously called from modal
-            var accountInfo = await WalletProvider.Login(_authToken);
-            await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+            var accountToken = await WalletProvider.Login(_authToken);
+            await ValidateWalletConnection(accountToken);
+            //var accountInfo = await WalletProvider.Login(_authToken);
+            //await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
         }
 
         public async Task ConnectToWebWallet(string webWalletAddress)
@@ -285,8 +291,10 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
                 _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
                 await WalletProvider.Init(webWalletAddress);
-                var accountInfo = await WalletProvider.Login(_authToken);
-                await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+                var accountToken = await WalletProvider.Login(_authToken);
+                await ValidateWalletConnection(accountToken);
+                //var accountInfo = await WalletProvider.Login(_authToken);
+                //await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
             }
             catch { }
         }
@@ -300,8 +308,10 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
                 _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
                 await WalletProvider.Init(webWalletAddress);
-                var accountInfo = await WalletProvider.Login(_authToken);
-                await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+                var accountToken = await WalletProvider.Login(_authToken);
+                await ValidateWalletConnection(accountToken);
+                //var accountInfo = await WalletProvider.Login(_authToken);
+                //await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
             }
             catch { }
         }
@@ -326,31 +336,19 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             WalletDisconnected();
         }
 
-        public string GetAddress()
-        {
-            return _localStorage.GetItem<AccountToken>(ACCOUNT_TOKEN).Address;
-        }
-
-        public async Task<bool?> SignMessage(SignableMessage signableMessage)
+        public async Task<bool?> SignMessage(string messageText)
         {
             if (WalletProvider is null) return null;
 
-            var signedMessage = await WalletProvider.SignMessage(signableMessage.Message);
+            var signature = await WalletProvider.SignMessage(messageText);
             if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return null;
 
-            if (signedMessage == "canceled")
+            if (string.IsNullOrEmpty(signature))
             {
                 return null;
             }
 
-            var messageSignature = JsonWrapper.Deserialize<MessageSignature>(signedMessage);
-            var message = new SignableMessage()
-            {
-                Address = Address.FromBech32(GetAddress()),
-                Message = Encoding.Default.GetString(Convert.FromHexString(messageSignature.Message[2..])),
-                Signature = messageSignature.Signature[2..]
-            };
-
+            var message = new Message(WalletAddress, Encoding.UTF8.GetBytes(messageText), Converter.FromHexString(signature));
             return await Http.PostAsync<bool>("api/wallet/verify", message);
         }
 
@@ -363,10 +361,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             var signedTransaction = await WalletProvider.SignTransaction(transactionRequest);
             if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return "";
 
-            if (signedTransaction == "canceled")
+            if (string.IsNullOrEmpty(signedTransaction))
             {
-                await WalletProvider.TransactionIsCanceled();
-                _postTxSendService.Clear();
+                await TransactionIsCanceled();
                 return null;
             }
 
@@ -406,10 +403,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             var signedTransactions = await WalletProvider.SignTransactions(transactionsRequest);
             if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return Array.Empty<string>();
 
-            if (signedTransactions == "canceled")
+            if (string.IsNullOrEmpty(signedTransactions))
             {
-                await WalletProvider.TransactionIsCanceled();
-                _postTxSendService.Clear();
+                await TransactionIsCanceled();
                 return null;
             }
 
@@ -447,6 +443,12 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             await WalletProvider.CancelAction();
         }
 
+        public async Task TransactionIsCanceled()
+        {
+            await JsRuntime.InvokeVoidAsync("cancelTxToast");
+            _postTxSendService.Clear();
+        }
+
         public void PreparePostTxSendProcess(PostTxSendProcess process, object @object)
         {
             if (WalletProvider is null) return;
@@ -456,7 +458,6 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         }
 
         //After TX is sent successfully (tx is sent but you don't know if it will be success or fail at this stage), you can use this function to do a Post (Send) Process like a request to Mx.Blazor.DApp.Sever API
-
         //You can use the events TransactionsContainer.TxExecuted or TransactionsContainer.HashesExecuted to do a process after the TX is processed and you know the end state (success/fail/etc.)
         //Keep in mind that the TxExecuted/HashesExecuted events will not be triggered if the user will close the website before the tx is processed, so if you want to do an UPDATE in database it might not run...
         public async Task RunPostTxSendProcess()
@@ -473,7 +474,6 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
                 case WebWalletState.LoggingIn:
                     var accountToken = NavigationManager.Uri.GetAccountTokenFromUrl();
-
                     if (accountToken.IsValid())
                     {
                         _authToken = _sessionStorage.GetItemAsString(AUTH_TOKEN);
@@ -501,14 +501,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
                     try
                     {
-                        var messageSignature = new MessageSignature(message, signature);
-                        var signableMessage = new SignableMessage()
-                        {
-                            Address = Address.FromBech32(GetAddress()),
-                            Message = messageSignature.Message,
-                            Signature = messageSignature.Signature
-                        };
-
+                        var signableMessage = new Message(WalletAddress, Encoding.UTF8.GetBytes(message), Converter.FromHexString(signature));
                         Console.WriteLine(await Http.PostAsync<bool>("api/wallet/verify", signableMessage));
                     }
                     catch { }
@@ -525,9 +518,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
                     try
                     {
-                        if (signedRequests == "canceled")
+                        if (string.IsNullOrEmpty(signedRequests))
                         {
-                            await WalletProvider.TransactionIsCanceled();
+                            await TransactionIsCanceled();
                         }
                         else
                         {

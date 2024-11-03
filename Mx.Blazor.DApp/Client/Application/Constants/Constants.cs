@@ -13,21 +13,21 @@
         public const string ACCESS_TOKEN = "accessToken";
         public const string ACCESS_TOKEN_EXPIRES = "accessTokenExpires";
         public const string AUTH_TOKEN = "authToken";
-        public const string ACCOUNT_TOKEN = "accountToken";
-        public const string WALLET_TYPE = "wallettype";
-        public const string WEB_WALLET_STATE = "webwalletstate";
-        public const string WEB_WALLET_URL = "webwalleturl";
+        public const string WALLET_ADDRESS = "walletAddress";
+        public const string WALLET_TYPE = "walletType";
+        public const string WEB_WALLET_STATE = "webWalletState";
+        public const string WEB_WALLET_URL = "webWalletUrl";
         public const string WALLET_CONNECT_DEF_STORAGE = "walletconnect";
     }
 
     public static class BrowserSessionStorage
     {
-        public const string POST_PROCESS = "postprocess";
-        public const string POST_PROCESS_OBJECT = "postprocessobject";
+        public const string POST_PROCESS = "postProcess";
+        public const string POST_PROCESS_OBJECT = "postProcessObject";
         public const string SIG_MESSAGE = "sigmessage";
         public const string TX_TITLE = "txtitle";
         public const string TX_LIST = "txs";
-        public const string MOBILE_DEVICE = "mobiledevice";
+        public const string MOBILE_DEVICE = "mobileDevice";
         public const string EXTENSION_AVAILABLE = "extensionAvailable";
         public const string METAMASK_AVAILABLE = "metaMaskAvailable";
     }

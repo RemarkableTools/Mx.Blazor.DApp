@@ -40,7 +40,3 @@ export function signingModalClose() {
     $("#SignatureConfirmDevice").html("");
     $("#WalletSignatureModal").modal("hide");
 }
-
-export function cancelTxToast() {
-    new bootstrap.Toast(document.getElementById("canceledTransactionToast")).show();
-}

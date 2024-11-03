@@ -2,6 +2,8 @@
 using Mx.Blazor.DApp.Client.Application.Exceptions;
 using Mx.Blazor.DApp.Client.Application.ExtensionMethods;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
+using Mx.Blazor.DApp.Shared.Connection;
+using Mx.NET.SDK.Core.Domain;
 using Mx.NET.SDK.Domain;
 
 namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
@@ -21,9 +23,9 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
                 throw new InitException();
         }
 
-        public async Task<string> Login(string authToken)
+        public async Task<AccountToken> Login(string authToken)
         {
-            return await JsRuntime.InvokeAsync<string>("WebView.Obj.login");
+            return await JsRuntime.InvokeAsync<AccountToken>("WebView.Obj.login");
         }
 
         public async Task<string> GetAddress()

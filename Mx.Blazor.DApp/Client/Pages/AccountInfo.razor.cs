@@ -52,7 +52,7 @@ namespace Mx.Blazor.DApp.Client.Pages
 
         public async Task DisplayAccountInformation()
         {
-            var address = WalletProvider.GetAddress();
+            var address = WalletProvider.WalletAddress;
             await AccountContainer.Initialize(address);
 
             StateHasChanged();
@@ -62,7 +62,7 @@ namespace Mx.Blazor.DApp.Client.Pages
         {
             if (string.IsNullOrWhiteSpace(SignableMessageText)) return;
 
-            var signMessage = await WalletProvider.SignMessage(new SignableMessage() { Message = SignableMessageText });
+            var signMessage = await WalletProvider.SignMessage(SignableMessageText);
 
             if (signMessage == null)
                 await JsRuntime.InvokeVoidAsync("alert", "Signing message operation cancelled.");
