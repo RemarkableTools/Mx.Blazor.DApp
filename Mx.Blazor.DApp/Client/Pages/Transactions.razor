@@ -13,9 +13,9 @@
     {
         <div class="d-flex flex-column justify-content-center mb-3">
             <button class="btn btn-primary btn-lg px-4 mx-auto mb-4" @onclick="GetTransactions">Get some transactions</button>
-            @if (AccountTransactions != null)
+            @if (_accountTransactions != null)
             {
-                foreach (var tx in AccountTransactions)
+                foreach (var tx in _accountTransactions)
                 {
                     var explorerLink = $"{MultiversxNetwork.Provider.NetworkConfiguration.ExplorerUri}transactions/{tx.TxHash}";
                     <a class="font-monospace text-decoration-none text-center text-break mx-auto" href="@explorerLink" target="_blank">@tx.TxHash</a>

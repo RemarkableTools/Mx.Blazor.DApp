@@ -1,5 +1,5 @@
-﻿import { IframeProvider } from "@multiversx/sdk-web-wallet-iframe-provider";
-import { Address, SignableMessage, Transaction, TransactionPayload } from "@multiversx/sdk-core";
+﻿import {IframeProvider} from "@multiversx/sdk-web-wallet-iframe-provider/out";
+import {Address, Message, Transaction, TransactionPayload} from "@multiversx/sdk-core/out";
 import {
     IframeLoginTypes,
     showConnectionError,
@@ -8,16 +8,14 @@ import {
     signingMessageModalClose,
     signingModal,
     signingModalClose,
-    cancelTxToast
 } from "./common";
 
 class MetaMaskWallet {
-
     async init(walletURL, address) {
         this.provider = IframeProvider.getInstance();
         this.provider.setLoginType(IframeLoginTypes.metamask);
         this.provider.setWalletUrl(walletURL);
-        var initialized = await this.provider.init();
+        const initialized = await this.provider.init();
         if (address)
             this.provider = this.provider.setAddress(address);
 
@@ -30,80 +28,39 @@ class MetaMaskWallet {
     }
 
     async login(authToken) {
-        await this.provider.login({ token: authToken });
+        let account = await this.provider.login({token: authToken});
 
-        if (this.provider.account.signature) {
+        if (this.isConnected()) {
             $("#WalletConnectionsModal").modal("hide");
-            localStorage.setItem("wallettype", "7");
+            localStorage.setItem("walletType", "6");
         }
 
-        return JSON.stringify({
-            address: this.provider.account.address,
-            signature: this.provider.account.signature
-        });
+        return account;
     }
 
-    async getAddress() {
-        return await this.provider.getAddress();
-    }
-
-    async isConnected() {
-        return await this.provider.isConnected();
+    isConnected() {
+        return this.provider.isConnected() && this.provider.account.signature;
     }
 
     async logout() {
         await this.provider.logout();
     }
 
-    transactionCanceled() {
-        cancelTxToast();
-    }
-
     async signMessage(message) {
         signingMessageModal("MetaMask Wallet");
 
-        const signableMessage = new SignableMessage({
-            message: Buffer.from(message)
-        });
-
         try {
-            await this.provider.signMessage(signableMessage);
-            return JSON.stringify(signableMessage.toJSON(), null, 4);
-        }
-        catch (err) {
-            return "canceled";
-        }
-        finally {
+            let signedMessage = await this.provider.signMessage(
+                new Message({
+                    data: Buffer.from(message)
+                })
+            );
+
+            return signedMessage.signature.toString("hex")
+        } catch (err) {
+            return null;
+        } finally {
             signingMessageModalClose();
-        }
-    }
-
-    async signTransaction(transactionRequest) {
-        signingModal("MetaMask Wallet");
-
-        const transaction = new Transaction({
-            nonce: transactionRequest.nonce,
-            value: transactionRequest.value,
-            receiver: new Address(transactionRequest.receiver),
-            sender: new Address(transactionRequest.sender),
-            gasPrice: transactionRequest.gasPrice,
-            gasLimit: transactionRequest.gasLimit,
-            data: new TransactionPayload(transactionRequest.data),
-            chainID: transactionRequest.chainID,
-            version: transactionRequest.transactionVersion,
-            options: transactionRequest.options,
-            guardian: new Address(transactionRequest.guardian)
-        });
-
-        try {
-            const signedTransaction = await this.provider.signTransaction(transaction);
-            return JSON.stringify(signedTransaction.toSendable(), null, 4);
-        }
-        catch (err) {
-            return "canceled";
-        }
-        finally {
-            signingModalClose();
         }
     }
 
@@ -129,11 +86,9 @@ class MetaMaskWallet {
         try {
             const signedTransactions = await this.provider.signTransactions(transactions);
             return JSON.stringify(signedTransactions.map(transaction => transaction.toSendable()), null, 4);
-        }
-        catch (err) {
-            return "canceled";
-        }
-        finally {
+        } catch (err) {
+            return null;
+        } finally {
             signingModalClose();
         }
     }

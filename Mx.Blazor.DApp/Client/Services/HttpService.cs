@@ -2,7 +2,6 @@
 using System.Net.Http.Headers;
 using System.Text;
 using Blazored.LocalStorage;
-using Blazored.SessionStorage;
 using Mx.Blazor.DApp.Client.Application.Exceptions;
 using Mx.Blazor.DApp.Shared.Models;
 using Newtonsoft.Json;
@@ -22,19 +21,11 @@ namespace Mx.Blazor.DApp.Client.Services
         Task<T> PutAsync<T>(string? requestUri, object? value = null);
     }
 
-    public class HttpService : IHttpService
+    public class HttpService(
+        HttpClient httpClient,
+        ISyncLocalStorageService localStorage)
+        : IHttpService
     {
-        private readonly HttpClient _httpClient;
-        private readonly ISyncLocalStorageService _localStorage;
-
-        public HttpService(
-            HttpClient httpClient,
-            ISyncLocalStorageService localStorage)
-        {
-            _httpClient = httpClient;
-            _localStorage = localStorage;
-        }
-
         public async Task<HttpResponseMessage> GetAsync(string? requestUri)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
@@ -87,42 +78,44 @@ namespace Mx.Blazor.DApp.Client.Services
         {
             try
             {
-                var accessToken = _localStorage.GetItemAsString(ACCESS_TOKEN);
-                var isApiUrl = !request.RequestUri.IsAbsoluteUri;
+                var accessToken = localStorage.GetItemAsString(AccessToken);
+                var isApiUrl = !request.RequestUri!.IsAbsoluteUri;
                 if (accessToken != null && isApiUrl)
                     request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
         private async Task<HttpResponseMessage> SendRequest(HttpRequestMessage request)
         {
             ApplyHeaders(ref request);
 
-            using var response = await _httpClient.SendAsync(request);
+            var response = await httpClient.SendAsync(request);
 
             //throw exception on error response
-            if (!response.IsSuccessStatusCode)
-            {
-                if (response.StatusCode == HttpStatusCode.Unauthorized)
-                    throw new UnauthorizedAccessException();
+            if (response.IsSuccessStatusCode)
+                return response;
 
-                var content = await response.Content.ReadAsStringAsync();
-                var httpResponse = JsonConvert.DeserializeObject<HttpResponse>(content) ?? new HttpResponse();
-                throw new HttpException(httpResponse);
-            }
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+                throw new UnauthorizedAccessException();
 
-            return response;
+            var content = await response.Content.ReadAsStringAsync();
+            var httpResponse = JsonConvert.DeserializeObject<HttpResponse>(content) ?? new HttpResponse();
+            throw new HttpException(httpResponse);
+
         }
 
         private async Task<T> SendRequest<T>(HttpRequestMessage request)
         {
-            if (typeof(T).Equals(typeof(HttpResponseMessage)))
+            if (typeof(T) == typeof(HttpResponseMessage))
                 throw new Exception("Cannot get HttpResponseMessage with this method. Use Task<HttpResponseMessage> SendRequest(HttpRequestMessage request);");
 
             ApplyHeaders(ref request);
 
-            using var response = await _httpClient.SendAsync(request);
+            using var response = await httpClient.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
 
             //throw exception on error response
@@ -136,11 +129,7 @@ namespace Mx.Blazor.DApp.Client.Services
             }
 
 
-            T? deserializedContent;
-            if (typeof(T).Equals(typeof(string)))
-                deserializedContent = GetValue<T>(content);
-            else
-                deserializedContent = JsonConvert.DeserializeObject<T>(content);
+            var deserializedContent = typeof(T) == typeof(string) ? GetValue<T>(content) : JsonConvert.DeserializeObject<T>(content);
 
             //throw exception on null content
             if (deserializedContent is null)
@@ -154,7 +143,7 @@ namespace Mx.Blazor.DApp.Client.Services
             return deserializedContent;
         }
 
-        public static T GetValue<T>(string value)
+        private static T GetValue<T>(string value)
         {
             return (T)Convert.ChangeType(value, typeof(T));
         }

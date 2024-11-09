@@ -1,4 +1,4 @@
-﻿sessionStorage.setItem("mobiledevice", isDevice());
+﻿sessionStorage.setItem("mobileDevice", isDevice());
 function isDevice() {
     return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(navigator.userAgent);
 }
@@ -17,4 +17,8 @@ function getAccessToken() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     return urlParams.get('accessToken');
+}
+
+function cancelTxToast() {
+    new bootstrap.Toast(document.getElementById("canceledTransactionToast")).show();
 }

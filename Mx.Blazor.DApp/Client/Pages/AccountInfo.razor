@@ -25,7 +25,7 @@
 
                 <div class="d-flex flex-column p-4 panel mx-auto mw-600 mb-5">
                     <span class="fw-bold my-2">Sign Message:</span>
-                    <input type="text mb-2" @bind="@SignableMessageText" />
+                    <input type="text" @bind="@SignableMessageText" />
                     <button class="btn btn-primary mx-auto mt-4" @onclick="SignMessage">Sign message</button>
                 </div>
 
@@ -45,9 +45,9 @@
                     <span class="fw-bold my-2">Receiver:</span>
                     <input class="mb-2" type="text" @bind="@Receiver" />
                     <span class="fw-bold my-2">EGLD:</span>
-                    <input type="text mb-2" @bind="@EGLDAmount" />
+                    <input type="text" @bind="@EGLDAmount" />
                     <span class="fw-bold my-2">Message (optional):</span>
-                    <input type="text mb-2" @bind="@Message" />
+                    <input type="text" @bind="@Message" />
                     <button class="btn btn-primary mx-auto mt-4" @onclick="SignTransaction">Send EGLD</button>
                 </div>
 
@@ -56,9 +56,9 @@
                     <span class="fw-bold my-2">Receiver:</span>
                     <input class="mb-2" type="text" @bind="@ReceiverToken" />
                     <span class="fw-bold my-2">Token Identifier:</span>
-                    <input type="text mb-2" @bind="@TokenIdentifier" placeholder="e.g. TOKEN-123456" />
+                    <input type="text" @bind="@TokenIdentifier" placeholder="e.g. TOKEN-123456" />
                     <span class="fw-bold my-2">Amount:</span>
-                    <input type="text mb-2" @bind="@TokenAmount" placeholder="e.g. 10.5" />
+                    <input type="text" @bind="@TokenAmount" placeholder="e.g. 10.5" />
                     <button class="btn btn-primary mx-auto mt-4" @onclick="SignTokenTransaction">Send Token</button>
                 </div>
 
@@ -71,7 +71,7 @@
                         <em class="fw-normal me-1" b-nb5gpmrray="">*separated by comma</em>
                         <div class="badge text-bg-secondary px-2" b-nb5gpmrray="">,</div>
                     </div>
-                    <input type="text mb-2" @bind="@NftsIdentifier" placeholder="e.g. NFT-123456-01" />
+                    <input type="text" @bind="@NftsIdentifier" placeholder="e.g. NFT-123456-01" />
                     <button class="btn btn-primary mx-auto mt-4" @onclick="SignNftTransaction">Send multiple NFTs</button>
                 </div>
             }

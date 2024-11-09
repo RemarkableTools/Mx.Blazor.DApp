@@ -4,30 +4,24 @@ using Mx.NET.SDK.Provider;
 
 namespace Mx.Blazor.DApp.Client.Application.Constants
 {
-    public class MultiversxNetwork
+    public static class MultiversxNetwork
     {
-        public static Network MvxNetwork
-        {
-            //get => Network.MainNet;
-            get => Network.DevNet;
-            //get => Network.TestNet;
-        }
+        public static Network MvxNetwork =>
+            Network.DevNet;
+        // Network.MainNet;
+        // Network.TestNet;
 
-        public static ApiProvider Provider
-        {
-            get => new(new ApiNetworkConfiguration(MvxNetwork));
-        }
+        public static ApiProvider Provider => new(new ApiNetworkConfiguration(MvxNetwork));
 
-        public static TimeSpan TxCheckTime
-        {
-            get => TimeSpan.FromSeconds(6);
-        }
+        public static TimeSpan TxCheckTime => TimeSpan.FromSeconds(6);
 
-        public static NetworkConfig NetworkConfig { get; set; } = default!;
-        public async static Task InitializeNetworkConfig()
+        public static NetworkConfig? NetworkConfig { get; private set; }
+
+        public static async Task InitializeNetworkConfig()
         {
             NetworkConfig ??= await NetworkConfig.GetFromNetwork(Provider);
         }
+
         public static string MetaMaskSnapWalletUrl
         {
             get
@@ -40,6 +34,5 @@ namespace Mx.Blazor.DApp.Client.Application.Constants
                 };
             }
         }
-
     }
 }

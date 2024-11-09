@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Mx.NET.SDK.Core.Domain;
 using Mx.NET.SDK.Wallet;
 
-namespace Mx.Blazor.DApp.Server.Controllers
+namespace Mx.Blazor.DApp.Controllers
 {
     [Authorize]
     [ApiController]
@@ -11,7 +11,7 @@ namespace Mx.Blazor.DApp.Server.Controllers
     public class WalletController : ControllerBase
     {
         [HttpPost("verify")]
-        public IActionResult VerifyMessage(SignableMessage message)
+        public IActionResult VerifyMessage(Message message)
         {
             var response = message.VerifyMessage();
 

@@ -7,12 +7,11 @@ using Mx.Blazor.DApp.Client.Services.Wallet;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddScoped<IHttpService, HttpService>();
 builder.Services.AddScoped<ICopyService, CopyService>();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredSessionStorage();
-builder.Services.AddScoped<PostTxSendService>();
 builder.Services.AddScoped<WalletManagerService>();
 builder.Services.AddScoped<WalletProviderContainer>();
 builder.Services.AddScoped<NativeAuthService>();

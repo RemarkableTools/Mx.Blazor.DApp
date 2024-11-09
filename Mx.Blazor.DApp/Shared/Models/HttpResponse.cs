@@ -4,9 +4,9 @@ namespace Mx.Blazor.DApp.Shared.Models
 {
     public class HttpResponse
     {
-        public HttpStatusCode StatusCode { get; set; }
-        public string Message { get; set; } = "";
-        public string Error { get; set; } = "";
+        public HttpStatusCode StatusCode { get; init; }
+        public string Message { get; init; } = "";
+        public string Error { get; init; } = "";
 
         public HttpResponse() { }
 

@@ -1,9 +1,9 @@
-using Mx.Blazor.DApp.Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Serilog;
 using Mx.Blazor.DApp.Components;
+using Mx.Blazor.DApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,21 +20,25 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
 builder.Services.AddScoped<IConnectionService, ConnectionService>();
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    var key = Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:SecurityKey"));
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddAuthentication(
+    options =>
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false,
-    };
-});
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    }
+).AddJwtBearer(
+    options =>
+    {
+        var key = Encoding.UTF8.GetBytes(builder.Configuration.GetValue<string>("JWT:SecurityKey") ?? string.Empty);
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+        };
+    }
+);
 
 var app = builder.Build();
 

@@ -2,8 +2,8 @@
 {
     public class AccountToken
     {
-        public string Address { get; set; } = "";
-        public string? Signature { get; set; }
+        public string Address { get; init; } = "";
+        public string? Signature { get; init; }
 
         public bool IsValid()
             => Address != "" && !string.IsNullOrEmpty(Signature);

@@ -1,5 +1,4 @@
 ﻿using Microsoft.JSInterop;
-using Mx.NET.SDK.Configuration;
 using static Mx.Blazor.DApp.Client.Application.Constants.BrowserSessionStorage;
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
 
@@ -9,31 +8,32 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
     {
         private enum LedgerStates
         {
+            InitError,
+            TokenError,
+            EmptyAddressesList,
             List,
-            Error,
-            Error2,
             Verify,
             Loading
         };
 
-        private bool isMobile = false;
-        private bool extensionWalletAvailable = false;
-        private bool metaMaskWalletAvailable = false;
+        private bool _isMobile = false;
+        private bool _extensionWalletAvailable = false;
+        private bool _metaMaskWalletAvailable = false;
 
-        private string WalletConnectUri = "";
+        private string _walletConnectUri = "";
 
         private int LedgerAddressIndex { get; set; } = -1;
-        private int pageNumber = 0;
-        private const int pageSize = 10;
-        private LedgerStates LedgerState;
+        private int _pageNumber = 0;
+        private const int PAGE_SIZE = 10;
+        private LedgerStates _ledgerState;
         private string? AuthToken { get; set; }
-        private List<string> Addresses { get; set; } = default!;
+        private List<string>? Addresses { get; set; }
 
         protected override void OnInitialized()
         {
-            isMobile = SessionStorage.GetItem<bool>(MOBILE_DEVICE);
-            extensionWalletAvailable = SessionStorage.GetItem<bool>(EXTENSION_AVAILABLE);
-            metaMaskWalletAvailable = SessionStorage.GetItem<bool>(METAMASK_AVAILABLE);
+            _isMobile = SessionStorage.GetItem<bool>(MobileDevice);
+            _extensionWalletAvailable = SessionStorage.GetItem<bool>(ExtensionAvailable);
+            _metaMaskWalletAvailable = SessionStorage.GetItem<bool>(MetamaskAvailable);
         }
 
         public async void ExtensionWalletLogin()
@@ -46,9 +46,9 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
             await WalletProvider.ConnectToXPortalWallet();
         }
 
-        public void XPortalLogin()
+        private void XPortalLogin()
         {
-            NavigationManager.NavigateTo(WalletConnectUri);
+            NavigationManager.NavigateTo(_walletConnectUri);
         }
 
         public async void WebWalletLogin()
@@ -58,7 +58,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
 
         public async void XAliasWalletLogin()
         {
-            await WalletProvider.ConnectToWebWallet(Provider.NetworkConfiguration.XAliasWalletUri.AbsoluteUri);
+            await WalletProvider.ConnectToCrossWindowWallet(Provider.NetworkConfiguration.XAliasWalletUri.AbsoluteUri);
         }
 
         public async void MetaMaskWalletLogin()
@@ -74,13 +74,13 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
 
         private void SetLedgerState(LedgerStates state)
         {
-            LedgerState = state;
+            _ledgerState = state;
             StateHasChanged();
         }
 
         public async void HardwareWalletLogin()
         {
-            pageNumber = 0;
+            _pageNumber = 0;
             LedgerAddressIndex = -1;
             SetLedgerState(LedgerStates.Loading);
             Addresses = default!;
@@ -88,49 +88,53 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
             var initialized = await JsRuntime.InvokeAsync<bool>("HardwareWallet.Obj.prepLedger");
             if (!initialized)
             {
-                SetLedgerState(LedgerStates.Error);
+                SetLedgerState(LedgerStates.InitError);
                 return;
             }
 
-            await ReadLedgerAddresses(pageNumber, pageSize);
+            await ReadLedgerAddresses(_pageNumber, PAGE_SIZE);
         }
 
-        public async Task ReadLedgerAddresses(int pageNumber, int pageSize)
+        private async Task ReadLedgerAddresses(int pageNumber, int pageSize)
         {
             SetLedgerState(LedgerStates.Loading);
 
-            Addresses = await JsRuntime.InvokeAsync<List<string>>("HardwareWallet.Obj.getLedgerAddresses", pageNumber, pageSize);
+            Addresses = await JsRuntime.InvokeAsync<List<string>?>(
+                "HardwareWallet.Obj.getLedgerAddresses",
+                pageNumber,
+                pageSize
+            );
 
-            SetLedgerState(LedgerStates.List);
+            SetLedgerState(Addresses is null ? LedgerStates.EmptyAddressesList : LedgerStates.List);
         }
 
-        public async void Prev()
+        private async void Prev()
         {
-            if (pageNumber > 0)
-            {
-                LedgerAddressIndex = -1;
-                pageNumber--;
-                await ReadLedgerAddresses(pageNumber, pageSize);
-            }
+            if (_pageNumber <= 0)
+                return;
+
+            LedgerAddressIndex = -1;
+            _pageNumber--;
+            await ReadLedgerAddresses(_pageNumber, PAGE_SIZE);
         }
 
-        public async void Next()
+        private async void Next()
         {
-            if (Addresses != null)
-            {
-                LedgerAddressIndex = -1;
-                pageNumber++;
-                await ReadLedgerAddresses(pageNumber, pageSize);
-            }
+            if (Addresses == null)
+                return;
+
+            LedgerAddressIndex = -1;
+            _pageNumber++;
+            await ReadLedgerAddresses(_pageNumber, PAGE_SIZE);
         }
 
         public void SetLedgerAddressIndex(int index)
         {
-            LedgerAddressIndex = index + (pageNumber * pageSize);
+            LedgerAddressIndex = index + (_pageNumber * PAGE_SIZE);
             StateHasChanged();
         }
 
-        public async void HardwareWalletConfirm()
+        private async void HardwareWalletConfirm()
         {
             if (LedgerAddressIndex == -1) return;
 
@@ -143,8 +147,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Login
             }
             catch
             {
-                SetLedgerState(LedgerStates.Error2);
-                return;
+                SetLedgerState(LedgerStates.TokenError);
             }
         }
     }

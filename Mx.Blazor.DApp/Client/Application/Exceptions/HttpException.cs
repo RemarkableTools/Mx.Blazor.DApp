@@ -3,16 +3,9 @@ using System.Net;
 
 namespace Mx.Blazor.DApp.Client.Application.Exceptions
 {
-    public class HttpException : Exception
+    public class HttpException(HttpResponse httpResponse) : Exception(httpResponse.Message)
     {
-        public HttpStatusCode StatusCode { get; set; }
-        public string Error { get; set; }
-
-        public HttpException(HttpResponse httpResponse) : base(httpResponse.Message)
-        {
-            StatusCode = httpResponse.StatusCode;
-            Error = httpResponse.Error;
-        }
-
+        public HttpStatusCode StatusCode { get; set; } = httpResponse.StatusCode;
+        public string Error { get; set; } = httpResponse.Error;
     }
 }

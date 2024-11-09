@@ -1,11 +1,7 @@
 ﻿namespace Mx.Blazor.DApp.Shared.Connection
 {
-    public class AccessToken
+    public class AccessToken(string value)
     {
-        public string Value { get; set; }
-        public AccessToken(string value)
-        {
-            Value = value;
-        }
+        public string Value { get; } = value;
     }
 }

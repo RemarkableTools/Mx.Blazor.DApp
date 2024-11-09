@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RemarkableTools.Mx.Core" Version="2.1.1" />
+    <PackageReference Include="RemarkableTools.Mx.Core" Version="2.1.4" />
     <PackageReference Include="RemarkableTools.Mx.NativeAuthServer" Version="1.0.4" />
   </ItemGroup>
 

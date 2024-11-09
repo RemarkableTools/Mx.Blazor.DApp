@@ -1,8 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components;
-using Blazored.SessionStorage;
 using Blazored.LocalStorage;
-using static Mx.Blazor.DApp.Client.Application.Constants.BrowserSessionStorage;
 using static Mx.Blazor.DApp.Client.Application.Constants.BrowserLocalStorage;
 using static Mx.Blazor.DApp.Client.Application.Constants.DAppConstants;
 using static Mx.Blazor.DApp.Client.Application.Constants.MultiversxNetwork;
@@ -13,9 +11,7 @@ using Mx.NET.SDK.Domain;
 using Mx.NET.SDK.Provider.Dtos.Common.Transactions;
 using Mx.Blazor.DApp.Shared.Connection;
 using Mx.NET.SDK.Core.Domain;
-using Mx.Blazor.DApp.Client.Models;
 using System.Text;
-using Mx.NET.SDK.Core.Domain.Values;
 using Mx.Blazor.DApp.Client.Services.Containers;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders;
@@ -28,59 +24,47 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 {
     public class WalletProviderContainer
     {
-        private readonly IHttpService Http;
-        private readonly IJSRuntime JsRuntime;
+        private readonly IHttpService _http;
+        private readonly IJSRuntime _jsRuntime;
         private readonly ISyncLocalStorageService _localStorage;
-        private readonly ISyncSessionStorageService _sessionStorage;
-        private readonly NavigationManager NavigationManager;
-        private readonly TransactionsContainer TransactionsContainer;
-        private readonly PostTxSendService _postTxSendService;
+        private readonly NavigationManager _navigationManager;
+        private readonly TransactionsContainer _transactionsContainer;
         private readonly NativeAuthService _nativeAuthService;
+
         public WalletProviderContainer(
             IHttpService httpService,
             IJSRuntime jsRuntime,
             ISyncLocalStorageService localStorage,
-            ISyncSessionStorageService sessionStorage,
             NavigationManager navigationManager,
             TransactionsContainer transactionsContainer,
-            PostTxSendService postTxSendService,
             NativeAuthService nativeAuthService)
         {
-            Http = httpService;
-            JsRuntime = jsRuntime;
-            _sessionStorage = sessionStorage;
+            _http = httpService;
+            _jsRuntime = jsRuntime;
             _localStorage = localStorage;
-            NavigationManager = navigationManager;
-            TransactionsContainer = transactionsContainer;
-            _postTxSendService = postTxSendService;
+            _navigationManager = navigationManager;
+            _transactionsContainer = transactionsContainer;
             _nativeAuthService = nativeAuthService;
-
-            OnXPortalClientConnected += ValidateWalletConnection;
-            OnXPortalClientDisconnected += WalletDisconnected;
 
             Initialize();
         }
 
-        private IWalletProvider WalletProvider = default!;
-
-        private static Func<AccountToken?, Task> OnXPortalClientConnected = default!;
-        private static event Action? OnXPortalClientDisconnected;
-        [JSInvokable]
-        public static async void XPortalClientConnect(string accountInfo) => await OnXPortalClientConnected.Invoke(JsonWrapper.Deserialize<AccountToken>(accountInfo));
-        [JSInvokable]
-        public static void XPortalClientDisconnect() => OnXPortalClientDisconnected?.Invoke();
+        private IWalletProvider? _walletProvider;
 
         private string? _authToken;
+        public string WalletAddress => _localStorage.GetItemAsString(BrowserLocalStorage.WalletAddress) ?? "";
+        private string WalletUrl => _localStorage.GetItemAsString(WebWalletUrl) ?? "";
 
         public event Action? OnWalletConnected;
         public event Action? OnWalletDisconnected;
-        public async Task ValidateWalletConnection(AccountToken? accountToken)
+
+        private async Task ValidateWalletConnection(AccountToken? accountToken)
         {
-            if (IsConnected() || accessTokenExpired) return; //because xPortal wallet always validates at refresh
+            if (IsConnected() || _accessTokenExpired) return; //because xPortal wallet always validates at refresh
             if (accountToken == null || !accountToken.IsValid())
             {
-                WalletProvider = default!;
-                _localStorage.RemoveItem(WALLET_TYPE);
+                _walletProvider = default!;
+                _localStorage.RemoveItem(WalletProviderType);
                 return;
             }
 
@@ -89,122 +73,120 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
             await ValidateWalletConnection(accessToken);
         }
-        public async Task ValidateWalletConnection(string accessToken)
+
+        private async Task ValidateWalletConnection(string accessToken)
         {
             try
             {
-                var connectionToken = await Http.PostAsync<ConnectionToken>($"api/connection/verify", new AccessToken(accessToken));
-                _localStorage.SetItemAsString(ACCESS_TOKEN, connectionToken.AccessToken);
-                _localStorage.SetItem(ACCESS_TOKEN_EXPIRES, DateTime.Now.AddSeconds(NATIVE_AUTH_TTL).ToTimestamp());
-                _localStorage.SetItem(ACCOUNT_TOKEN, connectionToken.AccountToken);
+                var connectionToken = await _http.PostAsync<ConnectionToken>(
+                    $"api/connection/verify",
+                    new AccessToken(accessToken)
+                );
+                _localStorage.SetItemAsString(BrowserLocalStorage.AccessToken, connectionToken.AccessToken);
+                _localStorage.SetItem(AccessTokenExpires, DateTime.Now.AddSeconds(NativeAuthTtl).ToTimestamp());
+                _localStorage.SetItemAsString(BrowserLocalStorage.WalletAddress, connectionToken.AccountToken.Address);
 
                 OnWalletConnected?.Invoke();
             }
-            catch (HttpException hex) //access token could no be generated
+            catch (HttpException hex) //access token could not be generated
             {
-                WalletProvider = default!;
-                _localStorage.RemoveItem(WALLET_TYPE);
+                _walletProvider = default!;
+                _localStorage.RemoveItem(WalletProviderType);
 
-                await JsRuntime.InvokeVoidAsync("alert", hex.Message);
+                await _jsRuntime.InvokeVoidAsync("alert", hex.Message);
             }
         }
-        public void WalletDisconnected()
+
+        private void WalletDisconnected()
         {
-            WalletProvider = default!;
-            accessTokenExpired = false;
-            _localStorage.RemoveItem(ACCESS_TOKEN);
-            _localStorage.RemoveItem(ACCESS_TOKEN_EXPIRES);
-            _localStorage.RemoveItem(ACCOUNT_TOKEN);
-            _localStorage.RemoveItem(WALLET_TYPE);
-            _localStorage.RemoveItem(WEB_WALLET_STATE);
-            _localStorage.RemoveItem(WEB_WALLET_URL);
+            _walletProvider = default!;
+            _accessTokenExpired = false;
+            _localStorage.RemoveItem(BrowserLocalStorage.AccessToken);
+            _localStorage.RemoveItem(AccessTokenExpires);
+            _localStorage.RemoveItem(BrowserLocalStorage.WalletAddress);
+            _localStorage.RemoveItem(WalletProviderType);
+            _localStorage.RemoveItem(WebWalletUrl);
             _localStorage.RemoveAllWcItems();
 
             OnWalletDisconnected?.Invoke();
         }
 
-        private bool accessTokenExpired;
+        private bool _accessTokenExpired;
+
         private void Initialize()
         {
-            accessTokenExpired = false;
-            switch (_localStorage.GetItem<WalletType>(WALLET_TYPE))
+            _accessTokenExpired = false;
+            switch (_localStorage.GetItem<WalletType>(WalletProviderType))
             {
                 case WalletType.Extension:
-                    WalletProvider = new ExtensionWalletProvider(JsRuntime);
+                    _walletProvider = new ExtensionWalletProvider(_jsRuntime);
                     break;
                 case WalletType.XPortal:
-                    WalletProvider = new XPortalWalletProvider(JsRuntime);
+                    _walletProvider = new XPortalWalletProvider(_jsRuntime);
                     break;
                 case WalletType.Hardware:
-                    WalletProvider = new HardwareWalletProvider(JsRuntime);
+                    _walletProvider = new HardwareWalletProvider(_jsRuntime);
                     break;
                 case WalletType.Web:
-                    WalletProvider = new WebWalletProvider(JsRuntime);
+                    _walletProvider = new CrossWindowWalletProvider(_jsRuntime);
                     break;
                 case WalletType.WebView:
-                    WalletProvider = new WebViewProvider(JsRuntime);
-                    break;
-                case WalletType.CrossWindow:
-                    WalletProvider = new CrossWindowWalletProvider(JsRuntime);
+                    _walletProvider = new WebViewProvider(_jsRuntime);
                     break;
                 case WalletType.MetaMask:
-                    WalletProvider = new MetaMaskWalletProvider(JsRuntime);
+                    _walletProvider = new MetaMaskWalletProvider(_jsRuntime);
                     break;
                 default:
-                    _localStorage.RemoveItem(ACCESS_TOKEN);
-                    _localStorage.RemoveItem(ACCESS_TOKEN_EXPIRES);
-                    _localStorage.RemoveItem(ACCOUNT_TOKEN);
-                    _localStorage.RemoveItem(WALLET_TYPE);
-                    _localStorage.RemoveItem(WEB_WALLET_STATE);
+                    _localStorage.RemoveItem(BrowserLocalStorage.AccessToken);
+                    _localStorage.RemoveItem(AccessTokenExpires);
+                    _localStorage.RemoveItem(BrowserLocalStorage.WalletAddress);
+                    _localStorage.RemoveItem(WalletProviderType);
+                    _localStorage.RemoveItem(WebWalletUrl);
                     _localStorage.RemoveAllWcItems();
                     break;
             }
 
-            var expireTimestamp = _localStorage.GetItem<long>(ACCESS_TOKEN_EXPIRES);
-            if (expireTimestamp > 0 && expireTimestamp < DateTime.Now.ToTimestamp())
-            {
-                accessTokenExpired = true;
-                _localStorage.RemoveItem(ACCESS_TOKEN);
-            }
+            var expireTimestamp = _localStorage.GetItem<long>(AccessTokenExpires);
+            if (expireTimestamp <= 0 || expireTimestamp >= DateTime.Now.ToTimestamp())
+                return;
+
+            _accessTokenExpired = true;
+            _localStorage.RemoveItem(BrowserLocalStorage.AccessToken);
         }
 
         public async Task InitializeAsync()
         {
-            var accessToken = await JsRuntime.InvokeAsync<string>("getAccessToken");
+            var accessToken = await _jsRuntime.InvokeAsync<string>("getAccessToken");
             if (!string.IsNullOrEmpty(accessToken))
             {
                 await ConnectToWebView(accessToken);
                 return;
             }
 
-            if (WalletProvider is null) return;
+            if (_walletProvider is null) return;
 
-            switch (_localStorage.GetItem<WalletType>(WALLET_TYPE))
+            switch (_localStorage.GetItem<WalletType>(WalletProviderType))
             {
                 case WalletType.Extension:
-                    await WalletProvider.Init(GetAddress());
+                    await _walletProvider.Init(WalletAddress);
                     break;
                 case WalletType.XPortal:
-                    await WalletProvider.Init();
+                    await _walletProvider.Init();
                     break;
                 case WalletType.Hardware:
-                    await WalletProvider.Init();
+                    await _walletProvider.Init();
                     break;
                 case WalletType.Web:
-                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL));
-                    await WebWalletCheckingState();
+                    await _walletProvider.Init(WalletUrl, WalletAddress);
                     break;
                 case WalletType.WebView:
                     break;
-                case WalletType.CrossWindow:
-                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
-                    break;
                 case WalletType.MetaMask:
-                    await WalletProvider.Init(_localStorage.GetItemAsString(WEB_WALLET_URL), GetAddress());
+                    await _walletProvider.Init(WalletUrl, WalletAddress);
                     break;
             }
 
-            if (accessTokenExpired)
+            if (_accessTokenExpired)
             {
                 WalletManagerService.Logout();
             }
@@ -212,58 +194,78 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
 
         public async Task ConnectToExtensionWallet()
         {
-            WalletProvider = new ExtensionWalletProvider(JsRuntime);
+            _walletProvider = new ExtensionWalletProvider(_jsRuntime);
             try
             {
                 _authToken = await _nativeAuthService.GenerateToken();
 
-                await WalletProvider.Init();
-                var accountInfo = await WalletProvider.Login(_authToken);
-                await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+                await _walletProvider.Init();
+                var accountToken = await _walletProvider.Login(_authToken);
+                await ValidateWalletConnection(accountToken);
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
         public async Task ConnectToXPortalWallet()
         {
-            WalletProvider = new XPortalWalletProvider(JsRuntime);
+            _walletProvider = new XPortalWalletProvider(_jsRuntime);
             try
             {
                 _authToken = await _nativeAuthService.GenerateToken();
 
-                await WalletProvider.Init();
-                await WalletProvider.Login(_authToken);
+                await _walletProvider.Init();
+                // await WalletProvider.Login(_authToken);
+                var accountToken = await _walletProvider.Login(_authToken);
+                await ValidateWalletConnection(accountToken);
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
         public async Task ConnectToHardwareWallet(string authToken)
         {
-            WalletProvider = new HardwareWalletProvider(JsRuntime);
-            _authToken = authToken;
-            //Init is previously called from modal
-            var accountInfo = await WalletProvider.Login(_authToken);
-            await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+            _walletProvider = new HardwareWalletProvider(_jsRuntime);
+
+            try
+            {
+                _authToken = authToken;
+                //Init is previously called from modal
+                var accountToken = await _walletProvider.Login(_authToken);
+                await ValidateWalletConnection(accountToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
-        public async Task ConnectToWebWallet(string webWalletAddress)
+        public async Task ConnectToCrossWindowWallet(string webWalletAddress)
         {
-            WalletProvider = new WebWalletProvider(JsRuntime);
+            _walletProvider = new CrossWindowWalletProvider(_jsRuntime);
             try
             {
                 _authToken = await _nativeAuthService.GenerateToken();
 
-                _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
-                await WalletProvider.Init(webWalletAddress);
-                await WalletProvider.Login(_authToken);
+                _localStorage.SetItemAsString(WebWalletUrl, webWalletAddress);
+                await _walletProvider.Init(webWalletAddress);
+                var accountToken = await _walletProvider.Login(_authToken);
+                await ValidateWalletConnection(accountToken);
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
-        public async Task ConnectToWebView(string accessToken)
+        private async Task ConnectToWebView(string accessToken)
         {
-            WalletProvider = new WebViewProvider(JsRuntime);
-            _localStorage.SetItem(WALLET_TYPE, WalletType.WebView);
+            _walletProvider = new WebViewProvider(_jsRuntime);
+            _localStorage.SetItem(WalletProviderType, WalletType.WebView);
             var parts = accessToken.Split('.');
             _authToken = DecodeValue(parts[1]);
             var accountToken = new AccountToken()
@@ -271,279 +273,101 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
                 Address = DecodeValue(parts[0]),
                 Signature = parts[2]
             };
-            NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
-            await WalletProvider.Init();
+            _navigationManager.NavigateTo(_navigationManager.Uri.GetUrlWithoutParameters());
+            await _walletProvider.Init();
             await ValidateWalletConnection(accountToken);
-        }
-
-        public async Task ConnectToCrossWindowWallet(string webWalletAddress)
-        {
-            WalletProvider = new CrossWindowWalletProvider(JsRuntime);
-            try
-            {
-                _authToken = await _nativeAuthService.GenerateToken();
-
-                _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
-                await WalletProvider.Init(webWalletAddress);
-                var accountInfo = await WalletProvider.Login(_authToken);
-                await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
-            }
-            catch { }
         }
 
         public async Task ConnectToMetaMaskWallet(string webWalletAddress)
         {
-            WalletProvider = new MetaMaskWalletProvider(JsRuntime);
+            _walletProvider = new MetaMaskWalletProvider(_jsRuntime);
             try
             {
                 _authToken = await _nativeAuthService.GenerateToken();
 
-                _localStorage.SetItemAsString(WEB_WALLET_URL, webWalletAddress);
-                await WalletProvider.Init(webWalletAddress);
-                var accountInfo = await WalletProvider.Login(_authToken);
-                await ValidateWalletConnection(JsonWrapper.Deserialize<AccountToken>(accountInfo));
+                _localStorage.SetItemAsString(WebWalletUrl, webWalletAddress);
+                await _walletProvider.Init(webWalletAddress);
+                var accountToken = await _walletProvider.Login(_authToken);
+                await ValidateWalletConnection(accountToken);
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
         public bool IsConnected()
         {
-            if (WalletProvider is null) return false;
+            if (_walletProvider is null) return false;
 
             try
             {
-                var accessToken = _localStorage.GetItemAsString(ACCESS_TOKEN);
+                var accessToken = _localStorage.GetItemAsString(BrowserLocalStorage.AccessToken);
                 return !string.IsNullOrEmpty(accessToken);
             }
-            catch { return false; }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task Logout()
         {
-            if (WalletProvider is null) return;
+            if (_walletProvider is null) return;
 
-            await WalletProvider.Logout();
+            await _walletProvider.Logout();
             WalletDisconnected();
         }
 
-        public string GetAddress()
+        public async Task<bool?> SignMessage(string messageText)
         {
-            return _localStorage.GetItem<AccountToken>(ACCOUNT_TOKEN).Address;
-        }
+            if (_walletProvider is null) return null;
 
-        public async Task<bool?> SignMessage(SignableMessage signableMessage)
-        {
-            if (WalletProvider is null) return null;
-
-            var signedMessage = await WalletProvider.SignMessage(signableMessage.Message);
-            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return null;
-
-            if (signedMessage == "canceled")
+            var signature = await _walletProvider.SignMessage(messageText);
+            if (string.IsNullOrEmpty(signature))
             {
                 return null;
             }
 
-            var messageSignature = JsonWrapper.Deserialize<MessageSignature>(signedMessage);
-            var message = new SignableMessage()
-            {
-                Address = Address.FromBech32(GetAddress()),
-                Message = Encoding.Default.GetString(Convert.FromHexString(messageSignature.Message[2..])),
-                Signature = messageSignature.Signature[2..]
-            };
-
-            return await Http.PostAsync<bool>("api/wallet/verify", message);
+            var message = new Message(
+                WalletAddress,
+                Encoding.UTF8.GetBytes(messageText),
+                Converter.FromHexString(signature)
+            );
+            return await _http.PostAsync<bool>("api/wallet/verify", message);
         }
 
-        public async Task<string?> SignAndSendTransaction(TransactionRequest transactionRequest, string title = "Transaction")
+        public async Task<string[]?> SignAndSendTransactions(
+            string title = "Transaction(s)",
+            params TransactionRequest[] transactionsRequest)
         {
-            if (WalletProvider is null) return null;
+            if (_walletProvider is null) return null;
 
-            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
-
-            var signedTransaction = await WalletProvider.SignTransaction(transactionRequest);
-            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return "";
-
-            if (signedTransaction == "canceled")
+            var signedTransactions = await _walletProvider.SignTransactions(transactionsRequest);
+            if (string.IsNullOrEmpty(signedTransactions))
             {
-                await WalletProvider.TransactionIsCanceled();
-                _postTxSendService.Clear();
+                await _jsRuntime.InvokeVoidAsync("cancelTxToast");
                 return null;
             }
 
-            return await SendTransaction(signedTransaction, title);
-        }
-
-        private async Task<string?> SendTransaction(string signedTransaction, string title = "Transaction")
-        {
-            try
-            {
-                var transaction = JsonWrapper.Deserialize<TransactionRequestDto>(signedTransaction);
-                return await SendTransaction(transaction, title);
-            }
-            catch
-            {
-                _postTxSendService.Clear();
-                return null;
-            }
-        }
-
-        private async Task<string> SendTransaction(TransactionRequestDto transaction, string title)
-        {
-            var response = await Provider.SendTransaction(transaction);
-
-            await RunPostTxSendProcess();
-
-            TransactionsContainer.NewTransaction(title, response.TxHash);
-            return response.TxHash;
-        }
-
-        public async Task<string[]?> SignAndSendTransactions(TransactionRequest[] transactionsRequest, string title = "Transactions")
-        {
-            if (WalletProvider is null) return null;
-
-            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) _sessionStorage.SetItemAsString(TX_TITLE, title);
-
-            var signedTransactions = await WalletProvider.SignTransactions(transactionsRequest);
-            if (_localStorage.GetItem<WalletType>(WALLET_TYPE) == WalletType.Web) return Array.Empty<string>();
-
-            if (signedTransactions == "canceled")
-            {
-                await WalletProvider.TransactionIsCanceled();
-                _postTxSendService.Clear();
-                return null;
-            }
-
-            return await SendTransactions(signedTransactions, title);
-        }
-
-        private async Task<string[]?> SendTransactions(string signedTransactions, string title = "Transactions")
-        {
             try
             {
                 var transactions = JsonWrapper.Deserialize<TransactionRequestDto[]>(signedTransactions);
-                return await SendTransactions(transactions, title);
+                var response = await Provider.SendTransactions(transactions);
+                _transactionsContainer.NewTransactions(title, response.TxsHashes.Select(tx => tx.Value).ToArray());
+                return response.TxsHashes.Select(tx => tx.Value).ToArray();
             }
-            catch
+            catch (Exception)
             {
-                _postTxSendService.Clear();
                 return null;
             }
-        }
-
-        private async Task<string[]> SendTransactions(TransactionRequestDto[] transactions, string title)
-        {
-            var response = await Provider.SendTransactions(transactions);
-
-            await RunPostTxSendProcess();
-
-            TransactionsContainer.NewTransaction(title, response.TxsHashes.Select(tx => tx.Value).ToArray());
-            return response.TxsHashes.Select(tx => tx.Value).ToArray();
         }
 
         public async Task CancelAction()
         {
-            if (WalletProvider is null) return;
+            if (_walletProvider is null) return;
 
-            await WalletProvider.CancelAction();
-        }
-
-        public void PreparePostTxSendProcess(PostTxSendProcess process, object @object)
-        {
-            if (WalletProvider is null) return;
-
-            _sessionStorage.SetItem(POST_PROCESS, process);
-            _sessionStorage.SetItem(POST_PROCESS_OBJECT, @object);
-        }
-
-        //After TX is sent successfully (tx is sent but you don't know if it will be success or fail at this stage), you can use this function to do a Post (Send) Process like a request to Mx.Blazor.DApp.Sever API
-
-        //You can use the events TransactionsContainer.TxExecuted or TransactionsContainer.HashesExecuted to do a process after the TX is processed and you know the end state (success/fail/etc.)
-        //Keep in mind that the TxExecuted/HashesExecuted events will not be triggered if the user will close the website before the tx is processed, so if you want to do an UPDATE in database it might not run...
-        public async Task RunPostTxSendProcess()
-        {
-            await _postTxSendService.Run();
-        }
-
-        public async Task WebWalletCheckingState()
-        {
-            switch (_localStorage.GetItem<WebWalletState>(WEB_WALLET_STATE))
-            {
-                case WebWalletState.None:
-                    break;
-
-                case WebWalletState.LoggingIn:
-                    var accountToken = NavigationManager.Uri.GetAccountTokenFromUrl();
-
-                    if (accountToken.IsValid())
-                    {
-                        _authToken = _sessionStorage.GetItemAsString(AUTH_TOKEN);
-                        await ValidateWalletConnection(accountToken);
-                        _sessionStorage.RemoveItem(AUTH_TOKEN);
-
-                        NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
-
-                        _localStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
-                    }
-                    else
-                    {
-                        _localStorage.RemoveItem(WALLET_TYPE);
-                        _localStorage.RemoveItem(WEB_WALLET_STATE);
-                        _sessionStorage.RemoveItem(AUTH_TOKEN);
-                    }
-                    break;
-
-                case WebWalletState.WaitingForSig:
-                    var signature = NavigationManager.Uri.GetSignatureFromUrl();
-                    var message = _sessionStorage.GetItemAsString(SIG_MESSAGE) ?? "";
-                    _sessionStorage.RemoveItem(SIG_MESSAGE);
-
-                    NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
-
-                    try
-                    {
-                        var messageSignature = new MessageSignature(message, signature);
-                        var signableMessage = new SignableMessage()
-                        {
-                            Address = Address.FromBech32(GetAddress()),
-                            Message = messageSignature.Message,
-                            Signature = messageSignature.Signature
-                        };
-
-                        Console.WriteLine(await Http.PostAsync<bool>("api/wallet/verify", signableMessage));
-                    }
-                    catch { }
-                    finally
-                    {
-                        _localStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
-                    }
-                    break;
-
-                case WebWalletState.WaitingForTx:
-                    var signedRequests = NavigationManager.Uri.GetTransactionsFromUrl();
-
-                    NavigationManager.NavigateTo(NavigationManager.Uri.GetUrlWithoutParameters());
-
-                    try
-                    {
-                        if (signedRequests == "canceled")
-                        {
-                            await WalletProvider.TransactionIsCanceled();
-                        }
-                        else
-                        {
-                            await SendTransactions(signedRequests, _sessionStorage.GetItemAsString(TX_TITLE));
-
-                            await RunPostTxSendProcess();
-                        }
-                    }
-                    catch { }
-                    finally
-                    {
-                        _sessionStorage.RemoveItem(TX_TITLE);
-                        _localStorage.SetItem(WEB_WALLET_STATE, WebWalletState.None);
-                    }
-                    break;
-            }
+            await _walletProvider.CancelAction();
         }
     }
 }
