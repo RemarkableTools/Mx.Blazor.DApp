@@ -5,8 +5,8 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
 {
     public class AccountContainer
     {
-        public Account Account { get; set; } = default!;
-        public AccountToken[] AccountTokens { get; set; } = default!;
+        public Account? Account { get; private set; }
+        public AccountToken[]? AccountTokens { get; private set; }
 
         public async Task Initialize(string address)
         {
@@ -17,7 +17,10 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
                 Account ??= Account.From(await Provider.GetAccount(address));
                 AccountTokens ??= AccountToken.From(await Provider.GetAccountTokens(address, 1000));
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
 
         public void Clear()
@@ -47,7 +50,10 @@ namespace Mx.Blazor.DApp.Client.Services.Containers
             {
                 AccountTokens = AccountToken.From(await Provider.GetAccountTokens(Account.Address.Bech32, 1000));
             }
-            catch { }
+            catch
+            {
+                // ignored
+            }
         }
     }
 }

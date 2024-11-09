@@ -6,22 +6,17 @@ namespace Mx.Blazor.DApp.Client.Shared
     public partial class MainLayout
     {
         private bool WalletConnected;
-        private string CurrentNetwork { get; set; } = "";
+        private string CurrentNetwork { get; } = "";
 
         public MainLayout()
         {
-            switch (Provider.NetworkConfiguration.Network)
+            CurrentNetwork = Provider.NetworkConfiguration.Network switch
             {
-                case Network.MainNet:
-                    CurrentNetwork = "MainNet";
-                    break;
-                case Network.DevNet:
-                    CurrentNetwork = "DevNet";
-                    break;
-                case Network.TestNet:
-                    CurrentNetwork = "TestNet";
-                    break;
-            }
+                Network.MainNet => "MainNet",
+                Network.DevNet => "DevNet",
+                Network.TestNet => "TestNet",
+                _ => CurrentNetwork
+            };
         }
 
         protected override void OnInitialized()

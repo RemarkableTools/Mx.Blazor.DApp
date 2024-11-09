@@ -9,16 +9,16 @@ namespace Mx.Blazor.DApp.Client.Pages
         [CascadingParameter]
         private bool WalletConnected { get; set; }
 
-        private TransactionDto[]? AccountTransactions;
+        private TransactionDto[]? _accountTransactions;
 
-        public async Task GetTransactions()
+        private async Task GetTransactions()
         {
             var address = WalletProvider.WalletAddress;
             Dictionary<string, string> dict = new()
             {
                 { "sender", address }
             };
-            AccountTransactions = await Provider.GetTransactions(100, 0, dict);
+            _accountTransactions = await Provider.GetTransactions(100, 0, dict);
 
             StateHasChanged();
         }

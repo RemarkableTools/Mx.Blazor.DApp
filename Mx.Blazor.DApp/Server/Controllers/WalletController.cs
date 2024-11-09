@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Mx.NET.SDK.Core.Domain;
 using Mx.NET.SDK.Wallet;
-using Mx.NET.SDK.Wallet.Wallet;
 
-namespace Mx.Blazor.DApp.Server.Controllers
+namespace Mx.Blazor.DApp.Controllers
 {
     [Authorize]
     [ApiController]

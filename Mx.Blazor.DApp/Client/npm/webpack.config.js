@@ -59,26 +59,6 @@ module.exports = [
                 }
             ]
         },
-        output: {
-            path: path.resolve(__dirname, '../wwwroot/js/npm'),
-            filename: "webWallet.js",
-            library: "WebWallet"
-        },
-        name: "WebWallet",
-        entry: "./src/webWallet.js"
-    },
-    {
-        module: {
-            rules: [
-                {
-                    test: /\.(js|jsx)$/,
-                    exclude: /node_modules/,
-                    use: {
-                        loader: "babel-loader"
-                    }
-                }
-            ]
-        },
         plugins: [
             new webpack.ProvidePlugin({
                 Buffer: ['buffer', 'Buffer'],

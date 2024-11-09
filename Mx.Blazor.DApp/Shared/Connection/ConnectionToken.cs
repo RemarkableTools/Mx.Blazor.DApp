@@ -1,15 +1,10 @@
 ﻿namespace Mx.Blazor.DApp.Shared.Connection
 {
-    public class ConnectionToken
+    public class ConnectionToken(
+        AccountToken accountToken,
+        string accessToken)
     {
-        public AccountToken AccountToken { get; set; }
-        public string AccessToken { get; set; }
-
-        public ConnectionToken(AccountToken accountToken,
-                               string accessToken)
-        {
-            AccountToken = accountToken;
-            AccessToken = accessToken;
-        }
+        public AccountToken AccountToken { get; } = accountToken;
+        public string AccessToken { get; } = accessToken;
     }
 }

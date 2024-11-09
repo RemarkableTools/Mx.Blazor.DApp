@@ -8,14 +8,14 @@ namespace Mx.Blazor.DApp.Client.Shared
         [CascadingParameter]
         private bool WalletConnected { get; set; }
 
-        private bool collapseNavMenu = true;
-        private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+        private bool _collapseNavMenu = true;
+        private string? NavMenuCssClass => _collapseNavMenu ? "collapse" : null;
         private void ToggleNavMenu()
         {
-            collapseNavMenu = !collapseNavMenu;
+            _collapseNavMenu = !_collapseNavMenu;
         }
 
-        public void Disconnect()
+        private static void Disconnect()
         {
             WalletManagerService.Logout();
         }

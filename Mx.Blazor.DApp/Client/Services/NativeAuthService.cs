@@ -7,21 +7,15 @@ using Mx.NET.SDK.NativeAuthClient.Entities;
 
 namespace Mx.Blazor.DApp.Client.Services
 {
-    public class NativeAuthService
+    public class NativeAuthService(NavigationManager navigationManager)
     {
-        private readonly NavigationManager _navigationManager;
-        private readonly NativeAuthClient _nativeAuthClient;
-        public NativeAuthService(NavigationManager navigationManager)
+        private readonly NativeAuthClient _nativeAuthClient = new(new NativeAuthClientConfig()
         {
-            _navigationManager = navigationManager;
-            _nativeAuthClient = new(new NativeAuthClientConfig()
-            {
-                Origin = _navigationManager.BaseUri.GetHost(),
-                ApiUrl = Provider.NetworkConfiguration.APIUri.AbsoluteUri,
-                ExpirySeconds = NATIVE_AUTH_TTL,
-                BlockHashShard = 2
-            });
-        }
+            Origin = navigationManager.BaseUri.GetHost(),
+            ApiUrl = Provider.NetworkConfiguration.APIUri.AbsoluteUri,
+            ExpirySeconds = NativeAuthTtl,
+            BlockHashShard = 2
+        });
 
         public async Task<string> GenerateToken()
         {

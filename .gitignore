@@ -362,11 +362,23 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+# VS Code files for those working on multiple tools
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains Rider
+*.sln.iml
+.idea/
+
 #appsettings
 appsettings.Development.json
 appsettings.Production.json
 
 # other
 desktop.ini
-/Mx.Blazor.DApp/Server/.config
 *.bat
+*.sh

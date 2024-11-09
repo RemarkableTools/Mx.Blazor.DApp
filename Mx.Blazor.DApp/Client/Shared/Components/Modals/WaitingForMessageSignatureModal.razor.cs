@@ -16,9 +16,9 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Modals
 
         private void SetCancelButton()
         {
-            CanCancel = LocalStorage.GetItem<WalletType>(WALLET_TYPE) switch
+            CanCancel = LocalStorage.GetItem<WalletType>(WalletProviderType) switch
             {
-                WalletType.Extension or WalletType.CrossWindow or WalletType.MetaMask => true,
+                WalletType.Extension or WalletType.Web or WalletType.MetaMask => true,
                 _ => false,
             };
             StateHasChanged();
@@ -29,7 +29,7 @@ namespace Mx.Blazor.DApp.Client.Shared.Components.Modals
             SetCancelButton();
         }
 
-        public async void CancelAction()
+        private async void CancelAction()
         {
             await WalletProvider.CancelAction();
         }

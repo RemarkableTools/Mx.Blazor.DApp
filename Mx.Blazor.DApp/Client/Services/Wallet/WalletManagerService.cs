@@ -4,21 +4,11 @@ using static Mx.Blazor.DApp.Client.Application.Constants.DAppConstants;
 
 namespace Mx.Blazor.DApp.Client.Services.Wallet
 {
-    public class WalletManagerService
+    public class WalletManagerService(
+        WalletProviderContainer walletProvider,
+        IJSRuntime jsRuntime,
+        AccountContainer accountContainer)
     {
-        private readonly WalletProviderContainer _walletProvider;
-        private readonly IJSRuntime JsRuntime;
-        private readonly AccountContainer _accountContainer;
-        public WalletManagerService(
-            WalletProviderContainer walletProvider,
-            IJSRuntime jsRuntime,
-            AccountContainer accountContainer)
-        {
-            _walletProvider = walletProvider;
-            JsRuntime = jsRuntime;
-            _accountContainer = accountContainer;
-        }
-
         private static event Action? OnDisconnectByInactivity;
         [JSInvokable]
         public static void DisconnectByInactivity() => OnDisconnectByInactivity?.Invoke();
@@ -30,24 +20,24 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
         {
             OnDisconnectByInactivity += DisconnectEvent;
             OnLogout += LogoutFromWallet;
-            await JsRuntime.InvokeVoidAsync("initInactivityTimer", INACTIVITY_TIMER);
+            await jsRuntime.InvokeVoidAsync("initInactivityTimer", InactivityTimer);
         }
 
-        public async void DisconnectEvent()
+        private async void DisconnectEvent()
         {
             await Disconnect();
         }
 
-        public async void LogoutFromWallet()
+        private async void LogoutFromWallet()
         {
             await Disconnect();
-            await JsRuntime.InvokeVoidAsync("removeInactivityTimer");
+            await jsRuntime.InvokeVoidAsync("removeInactivityTimer");
         }
 
         private async Task Disconnect()
         {
-            await _walletProvider.Logout();
-            _accountContainer.Clear();
+            await walletProvider.Logout();
+            accountContainer.Clear();
 
             OnDisconnectByInactivity -= DisconnectEvent;
             OnLogout -= LogoutFromWallet;

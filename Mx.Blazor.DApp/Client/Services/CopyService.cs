@@ -7,17 +7,11 @@ namespace Mx.Blazor.DApp.Client.Services
         Task CopyToClipboard(string text);
     }
 
-    public class CopyService : ICopyService
+    public class CopyService(IJSRuntime jsRuntime) : ICopyService
     {
-        private readonly IJSRuntime JsRuntime;
-        public CopyService(IJSRuntime jsRuntime)
-        {
-            JsRuntime = jsRuntime;
-        }
-
         public async Task CopyToClipboard(string text)
         {
-            await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
+            await jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
         }
     }
 }
