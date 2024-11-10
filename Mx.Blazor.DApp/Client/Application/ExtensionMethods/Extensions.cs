@@ -7,7 +7,7 @@ namespace Mx.Blazor.DApp.Client.Application.ExtensionMethods
     {
         public static void RemoveAllWcItems(this ISyncLocalStorageService localStorage)
         {
-            localStorage.RemoveItem(WALLET_CONNECT_DEF_STORAGE);
+            localStorage.RemoveItem(WalletConnectDefStorage);
             localStorage.RemoveItems(localStorage.Keys().Where(k => k.StartsWith("wc@2")));
         }
     }
