@@ -32,6 +32,7 @@ class XPortal {
             onClientLogin: async () => {
             },
             onClientLogout: async () => {
+                DotNet.invokeMethodAsync('Mx.Blazor.DApp.Client', 'XPortalClientDisconnect');
             },
             onClientEvent: (event) => {
             }

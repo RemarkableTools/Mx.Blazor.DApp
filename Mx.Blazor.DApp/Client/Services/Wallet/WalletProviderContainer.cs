@@ -46,10 +46,16 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             _transactionsContainer = transactionsContainer;
             _nativeAuthService = nativeAuthService;
 
+            OnXPortalClientDisconnected += WalletDisconnected;
+
             Initialize();
         }
 
         private IWalletProvider? _walletProvider;
+
+        private static event Action? OnXPortalClientDisconnected;
+        [JSInvokable]
+        public static void XPortalClientDisconnect() => OnXPortalClientDisconnected?.Invoke();
 
         private string? _authToken;
         public string WalletAddress => _localStorage.GetItemAsString(BrowserLocalStorage.WalletAddress) ?? "";
