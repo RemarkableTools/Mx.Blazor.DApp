@@ -10,13 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@multiversx/sdk-core": "^13.6.1",
+    "@multiversx/sdk-core": "^13.15.0",
     "@multiversx/sdk-extension-provider": "^4.0.0",
     "@multiversx/sdk-hw-provider": "^7.0.0",
     "@multiversx/sdk-wallet-connect-provider": "^5.0.0",
-    "@multiversx/sdk-web-wallet-cross-window-provider": "^2.0.1",
+    "@multiversx/sdk-web-wallet-cross-window-provider": "^2.0.2",
     "@multiversx/sdk-web-wallet-iframe-provider": "^2.0.1",
-    "@multiversx/sdk-webview-provider": "^2.0.0-alpha.0",
+    "@multiversx/sdk-webview-provider": "^2.0.2",
     "@walletconnect/qrcode-modal": "^1.8.0"
   },
   "devDependencies": {
