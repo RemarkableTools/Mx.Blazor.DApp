@@ -20,6 +20,7 @@ builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
 builder.Services.AddScoped<IConnectionService, ConnectionService>();
+builder.Services.AddScoped<ITransactionsService, TransactionsService>();
 builder.Services.AddAuthentication(
     options =>
     {
@@ -53,6 +54,12 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("Content-Security-Policy", "frame-ancestors 'self' *.multiversx.com");
+    await next();
+});
 
 app.UseHttpsRedirection();
 

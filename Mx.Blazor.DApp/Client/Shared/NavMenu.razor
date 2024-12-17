@@ -1,6 +1,7 @@
 ﻿<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Blazor DApp</a>
+        @* <a class="navbar-brand" href="">Smart Send DApp</a> *@
+        <img class="logo" src="/icons/ic_MultiversX.svg" alt="MultiversX" />
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -23,12 +24,7 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <i class="bi bi-person-vcard"></i> Account
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="transactions">
-                <i class="bi bi-list-ul"></i> Transactions
+                <i class="bi bi-list-ul"></i> Smart Send
             </NavLink>
         </div>
     </nav>

@@ -34,9 +34,10 @@ main {
     background-color: goldenrod;
     color: var(--bs-gray-900);
     border-radius: 1rem;
-    padding: 3px 15px;
+    padding: 2px 12px;
     font-weight: bold;
     font-family: monospace;
+    font-size: .9rem;
 }
 
 .top-row-link {

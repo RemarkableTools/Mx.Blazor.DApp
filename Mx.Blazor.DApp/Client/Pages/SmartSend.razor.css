@@ -1,0 +1,22 @@
+.mw-900 {
+    max-width: 900px;
+    width: 100%;
+}
+
+.panel {
+    border: 0px solid #313434;
+    background-color: var(--bs-gray-900);
+    border-radius: .25rem;
+    box-shadow: 0 1px 6px 0 var(--c-shadow);
+}
+
+textarea.list {
+    white-space: pre;
+    background-color: var(--bs-gray-900);
+    color: white;
+}
+
+textarea::placeholder {
+    color: #6c757d !important;
+    font-style: italic;
+}
