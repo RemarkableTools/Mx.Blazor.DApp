@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using Mx.NET.SDK.Domain;
 using Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces;
 using Mx.Blazor.DApp.Shared.Connection;
+using Mx.NET.SDK.Provider.Dtos.Common.Transactions;
 
 namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
 {
@@ -36,6 +37,14 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders
             return await jsRuntime.InvokeAsync<string>(
                 "MetaMaskWallet.Obj.signTransactions",
                 (object)transactionsRequest.GetTransactionsRequestDecoded()
+            );
+        }
+
+        public async Task<string> SignTransactions(TransactionRequestDto[] transactionsRequest)
+        {
+            return await jsRuntime.InvokeAsync<string>(
+                "MetaMaskWallet.Obj.signTransactions",
+                (object)transactionsRequest
             );
         }
 

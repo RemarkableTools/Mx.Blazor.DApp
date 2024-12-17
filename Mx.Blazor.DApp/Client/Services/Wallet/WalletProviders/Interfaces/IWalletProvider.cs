@@ -1,5 +1,6 @@
 ﻿using Mx.Blazor.DApp.Shared.Connection;
 using Mx.NET.SDK.Domain;
+using Mx.NET.SDK.Provider.Dtos.Common.Transactions;
 
 namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces
 {
@@ -10,6 +11,7 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet.WalletProviders.Interfaces
         Task Logout();
         Task<string> SignMessage(string message);
         Task<string> SignTransactions(TransactionRequest[] transactionsRequest);
+        Task<string> SignTransactions(TransactionRequestDto[] transactionsRequest);
         Task CancelAction();
     }
 }

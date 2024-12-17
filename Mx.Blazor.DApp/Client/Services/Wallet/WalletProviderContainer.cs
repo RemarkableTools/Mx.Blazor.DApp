@@ -369,6 +369,32 @@ namespace Mx.Blazor.DApp.Client.Services.Wallet
             }
         }
 
+        public async Task<string[]?> SignAndSendTransactions(
+            string title = "Transaction(s)",
+            params TransactionRequestDto[] transactionsRequest)
+        {
+            if (_walletProvider is null) return null;
+
+            var signedTransactions = await _walletProvider.SignTransactions(transactionsRequest);
+            if (string.IsNullOrEmpty(signedTransactions))
+            {
+                await _jsRuntime.InvokeVoidAsync("cancelTxToast");
+                return null;
+            }
+
+            try
+            {
+                var transactions = JsonWrapper.Deserialize<TransactionRequestDto[]>(signedTransactions);
+                var response = await Provider.SendTransactions(transactions);
+                _transactionsContainer.NewTransactions(title, response.TxsHashes.Select(tx => tx.Value).ToArray());
+                return response.TxsHashes.Select(tx => tx.Value).ToArray();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
         public async Task CancelAction()
         {
             if (_walletProvider is null) return;
