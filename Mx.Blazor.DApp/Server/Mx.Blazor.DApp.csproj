@@ -8,7 +8,7 @@
     <AssemblyName>$(AssemblyName.Replace('-', ''))</AssemblyName>
   </PropertyGroup>
 
-1  <ItemGroup>
+  <ItemGroup>
     <Content Update="appsettings.json">
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </Content>
