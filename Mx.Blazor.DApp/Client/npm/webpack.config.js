@@ -195,4 +195,10 @@ module.exports = [
         name: "MetaMaskWallet",
         entry: "./src/metaMaskWallet.js",
     },
-];
+].map(config => ({
+    ...config,
+    plugins: [
+        ...(config.plugins ?? []),
+        new webpack.ProvidePlugin({ process: "process/browser.js" }),
+    ],
+}));

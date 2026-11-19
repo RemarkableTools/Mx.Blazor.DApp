@@ -17,7 +17,9 @@
     "@multiversx/sdk-web-wallet-cross-window-provider": "^2.0.2",
     "@multiversx/sdk-web-wallet-iframe-provider": "^2.0.1",
     "@multiversx/sdk-webview-provider": "^2.0.2",
-    "@walletconnect/qrcode-modal": "^1.8.0"
+    "buffer": "^6.0.3",
+    "process": "^0.11.10",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.25.6",
@@ -25,5 +27,20 @@
     "babel-loader": "^9.2.1",
     "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4"
+  },
+  "overrides": {
+    "@multiversx/sdk-core": {
+      "uuid": "^11.1.1"
+    },
+    "@multiversx/sdk-wallet-connect-provider": {
+      "@walletconnect/sign-client": "2.23.9",
+      "@walletconnect/utils": "2.23.9"
+    },
+    "@multiversx/sdk-web-wallet-cross-window-provider": {
+      "qs": "^6.17.1"
+    },
+    "@multiversx/sdk-web-wallet-iframe-provider": {
+      "qs": "^6.17.1"
+    }
   }
 }
